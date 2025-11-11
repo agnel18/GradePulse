@@ -21,14 +21,14 @@
         <div class="col-lg-6">
             <div class="card bg-white text-dark">
                 <div class="card-body p-5">
-                    <h2 class="text-center mb-4"><i class="fas fa-upload text-primary"></i> Upload Grades</h2>
+                    <h2 class="text-center mb-4"><i class="fas fa-users text-primary"></i> Upload Student Info</h2>
                     <form th:action="@{/upload}" method="post" enctype="multipart/form-data">
                         <div class="upload-area mb-4">
                             <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
                             <input type="file" name="file" accept=".xlsx" required class="form-control form-control-lg" />
                         </div>
                         <button type="submit" class="btn btn-primary btn-upload w-100">
-                            <i class="fas fa-paper-plane"></i> Upload → WhatsApp in 2 sec
+                            <i class="fas fa-paper-plane"></i> Upload → Save & Notify Parents
                         </button>
                     </form>
                     <div class="text-center mt-3">
@@ -38,6 +38,10 @@
                     </div>
                     <div th:if="${message}" class="alert alert-success mt-4 text-center">
                         <i class="fas fa-check-circle"></i> <span th:text="${message}"></span>
+                    </div>
+                    <div class="alert alert-info text-center mt-3">
+                        <i class="fas fa-users"></i> 
+                        Total students in system: <strong th:text="${totalStudents}">0</strong>
                     </div>
                 </div>
             </div>

@@ -34,4 +34,11 @@ build/
 
 # Secrets
 .env
-application-secrets.properties
+
+# Binaries
+ngrok/
+
+# IDE
+.idea/
+*.iml
+target/

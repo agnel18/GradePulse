@@ -3,26 +3,38 @@ package com.gradepulse.service;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
+import io.github.cdimascio.dotenv.Dotenv;
 
 @Service
-@RequiredArgsConstructor
 public class WhatsAppService {
 
-    @Value("${twilio.account.sid}") private String sid;
-    @Value("${twilio.auth.token}") private String token;
-    @Value("${twilio.whatsapp.from}") private String from;
+    private final String accountSid;
+    private final String authToken;
+    private final String whatsappNumber;
 
-    public void send(String to, String body) {
-        if (to == null || to.trim().isEmpty()) return;
-        Twilio.init(sid, token);
+    public WhatsAppService() {
+        Dotenv dotenv = Dotenv.configure()
+                             .directory("./")  // Look in project root
+                             .ignoreIfMissing()
+                             .load();
+
+        this.accountSid = dotenv.get("TWILIO_SID");
+        this.authToken = dotenv.get("TWILIO_TOKEN");
+        this.whatsappNumber = dotenv.get("TWILIO_WHATSAPP_NUMBER");
+
+        if (accountSid == null || authToken == null || whatsappNumber == null) {
+            throw new IllegalStateException("Missing Twilio config in .env file!");
+        }
+
+        Twilio.init(accountSid, authToken);
+    }
+
+    public void send(String to, String message) {
         Message.creator(
             new PhoneNumber("whatsapp:" + to),
-            new PhoneNumber(from),
-            body
+            new PhoneNumber(whatsappNumber),
+            message
         ).create();
     }
 }

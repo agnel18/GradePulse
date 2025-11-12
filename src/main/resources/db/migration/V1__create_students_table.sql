@@ -24,5 +24,19 @@ CREATE TABLE students (
     fee_status VARCHAR(50),
     attendance_percent DECIMAL(5,2),
     udise_uploaded BOOLEAN DEFAULT FALSE,
-    uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- FAMILY FIELDS (ALL IN V1)
+    father_name VARCHAR(255),
+    father_contact VARCHAR(20),
+    father_aadhaar VARCHAR(20),
+    mother_name VARCHAR(255),
+    mother_contact VARCHAR(20),
+    mother_aadhaar VARCHAR(20),
+    guardian_name VARCHAR(255),
+    guardian_contact VARCHAR(20),
+    guardian_aadhaar VARCHAR(20),
+    guardian_relation VARCHAR(50),
+    family_status VARCHAR(50) DEFAULT 'Both Parents',
+    language_preference VARCHAR(20) DEFAULT 'ENGLISH'
 );

@@ -116,6 +116,9 @@ public class Student {
     @Column(name = "family_status")
     private String familyStatus; //Two Fathers, Two Mothers, Single Father, Single Mother, Adoptive, Guardian, Orphan, Other
 
+    @Column(name = "language_preference")
+    private String languagePreference = "ENGLISH"; // Default
+
     // Constructors
     public Student() {}
 
@@ -231,4 +234,8 @@ public class Student {
 
     public String getGuardianAadhaar() { return guardianAadhaar; }
     public void setGuardianAadhaar(String guardianAadhaar) { this.guardianAadhaar = guardianAadhaar; }
+
+    public String getLanguagePreference() { return languagePreference; }
+    public void setLanguagePreference(String languagePreference) { this.languagePreference = languagePreference; }
+
 }

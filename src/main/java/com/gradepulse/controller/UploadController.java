@@ -15,12 +15,19 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import com.gradepulse.service.WhatsAppService;
+import org.apache.poi.ss.usermodel.DateUtil;
+import java.math.BigDecimal;
 
 @Controller
 public class UploadController {
 
     @Autowired
     private StudentRepository studentRepository;
+
+    @Autowired
+    private WhatsAppService whatsAppService;
+
 
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy");
 
@@ -40,34 +47,26 @@ public class UploadController {
             if (row.getRowNum() < 2) continue; // skip header + empty
 
             Student s = new Student();
-            s.setStudentId(getString(row, 0));
-            s.setFullName(getString(row, 1));
-            s.setDateOfBirth(getDate(row, 2));
-            s.setGender(getString(row, 3));
-            s.setApaarId(getString(row, 4));
-            s.setAadhaarNumber(getString(row, 5));
-            s.setCategory(getString(row, 6));
-            s.setAddress(getString(row, 7));
-            s.setPhoto(getBoolean(row, 13));
-            s.setPreviousSchoolTc(getBoolean(row, 14));
-            s.setAdmissionClass(getString(row, 15));
-            s.setAdmissionDate(getDate(row, 16));
-            s.setEnrollmentNo(getString(row, 17));
-            s.setPreviousMarksheet(getBoolean(row, 18));
-            s.setBloodGroup(getString(row, 19));
-            s.setAllergiesConditions(getString(row, 20));
-            s.setImmunization(getBoolean(row, 21));
-            s.setHeightCm(getInt(row, 22));
-            s.setWeightKg(getInt(row, 23));
-            s.setVisionCheck(getString(row, 24));
-            s.setCharacterCert(getString(row, 25));
-            s.setFeeStatus(getString(row, 26));
-            s.setAttendancePercent(getDouble(row, 27));
-            s.setUdiseUploaded(getBoolean(row, 28));
+            s.setPhoto(getBoolean(row, 9));           // J → Photo
+            s.setPreviousSchoolTc(getBoolean(row, 10)); // K → TC
+            s.setAdmissionClass(getString(row, 11));   // L → Admission Class
+            s.setAdmissionDate(getDate(row, 13));      // N → Admission Date
+            s.setEnrollmentNo(getString(row, 14));     // O → Enrollment No
+            s.setPreviousMarksheet(getBoolean(row, 15)); // P → Marksheet
+            s.setBloodGroup(getString(row, 16));       // Q → Blood Group
+            s.setAllergiesConditions(getString(row, 17)); // R → Allergies
+            s.setImmunization(getBoolean(row, 18));    // S → Immunization
+            s.setHeightCm(getInt(row, 19));            // T → Height
+            s.setWeightKg(getInt(row, 20));            // U → Weight
+            s.setVisionCheck(getString(row, 21));      // V → Vision
+            s.setCharacterCert(getString(row, 22));    // W → Character Cert
+            s.setFeeStatus(getString(row, 23));        // X → Fee Status
+            s.setAttendancePercent(getDouble(row, 24)); // Y → Attendance %
+            s.setUdiseUploaded(getBoolean(row, 25));   // Z → UDISE Uploaded
 
-            // === INCLUSIVE FAMILY PARSING (INSIDE LOOP) ===
-            String rawFamily = getString(row, 8);  // e.g., "Rajesh & Sunita"
-            String rawContact = getString(row, 11);
+            // === INCLUSIVE FAMILY PARSING ===
+            String rawFamily = getString(row, 8);      // I → Parent Name
+            String rawContact = getString(row, 12);    // M → Parent Contact (CORRECT!)
 
             if (rawFamily != null) {
                 rawFamily = rawFamily.trim();
@@ -101,15 +100,35 @@ public class UploadController {
             }
 
             // VALIDATE: Must have student ID and at least one contact
+            // TEST MODE: Allow all valid rows
             if (s.getStudentId() != null && 
-                (s.getFatherContact() != null || s.getMotherContact() != null || s.getGuardianContact() != null) &&
-                !studentRepository.existsByFatherContactOrMotherContactOrGuardianContact(
-                    s.getFatherContact(), s.getMotherContact(), s.getGuardianContact())) {
-                students.add(s);
+            (s.getFatherContact() != null || s.getMotherContact() != null || s.getGuardianContact() != null)) {
+            System.out.println("Adding: " + s.getFullName() + " | Contact: " + s.getFatherContact());
+            students.add(s);
             }
         }
 
         studentRepository.saveAll(students);
+
+        String welcome = """
+            Welcome to GradePulse!
+            Reply with:
+            1 → English (default)
+            2 → हिंदी
+            3 → தமிழ்
+            4 → ಕನ್ನಡ
+            """;
+
+        for (Student s : students) {
+            if (s.getFatherContact() != null) {
+                whatsAppService.send(s.getFatherContact(), welcome);
+            }
+            if (s.getMotherContact() != null) {
+                whatsAppService.send(s.getMotherContact(), welcome);
+            }
+        }
+
+
         workbook.close();
 
         model.addAttribute("message", 
@@ -122,22 +141,39 @@ public class UploadController {
     private String getString(Row row, int col) {
         Cell cell = row.getCell(col);
         if (cell == null) return null;
+    
         return switch (cell.getCellType()) {
             case STRING -> cell.getStringCellValue().trim();
-            case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());
+            case NUMERIC -> {
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    yield cell.getDateCellValue().toString();
+                } else {
+                    yield new java.math.BigDecimal(cell.getNumericCellValue()).toPlainString();
+                }
+            }
+            case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
+            case FORMULA -> cell.getStringCellValue();
             default -> null;
         };
     }
 
     private LocalDate getDate(Row row, int col) {
-        try {
-            Cell cell = row.getCell(col);
-            if (cell == null) return null;
-            String val = cell.getStringCellValue().trim();
-            return LocalDate.parse(val, dateFormatter);
-        } catch (Exception e) {
-            return null;
+        Cell cell = row.getCell(col);
+        if (cell == null) return null;
+    
+        if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
+            java.util.Date utilDate = cell.getDateCellValue();
+            return utilDate.toInstant()
+                          .atZone(java.time.ZoneId.systemDefault())
+                          .toLocalDate();
+        } else if (cell.getCellType() == CellType.STRING) {
+            try {
+                return LocalDate.parse(cell.getStringCellValue().trim(), dateFormatter);
+            } catch (Exception e) {
+                return null;
+            }
         }
+        return null;
     }
 
     private Integer getInt(Row row, int col) {

@@ -17,10 +17,16 @@ import java.util.ArrayList;
 import java.util.List;
 import com.gradepulse.service.WhatsAppService;
 import org.apache.poi.ss.usermodel.DateUtil;
-import java.math.BigDecimal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.io.OutputStream;
+
+
 
 @Controller
 public class UploadController {
+
+    private static final Logger log = LoggerFactory.getLogger(UploadController.class);
 
     @Autowired
     private StudentRepository studentRepository;
@@ -28,8 +34,6 @@ public class UploadController {
     @Autowired
     private WhatsAppService whatsAppService;
 
-
-    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy");
 
     @GetMapping("/upload")
     public String uploadPage(Model model) {
@@ -47,67 +51,66 @@ public class UploadController {
             if (row.getRowNum() < 2) continue; // skip header + empty
 
             Student s = new Student();
-            s.setPhoto(getBoolean(row, 9));           // J → Photo
-            s.setPreviousSchoolTc(getBoolean(row, 10)); // K → TC
-            s.setAdmissionClass(getString(row, 11));   // L → Admission Class
-            s.setAdmissionDate(getDate(row, 13));      // N → Admission Date
-            s.setEnrollmentNo(getString(row, 14));     // O → Enrollment No
-            s.setPreviousMarksheet(getBoolean(row, 15)); // P → Marksheet
-            s.setBloodGroup(getString(row, 16));       // Q → Blood Group
-            s.setAllergiesConditions(getString(row, 17)); // R → Allergies
-            s.setImmunization(getBoolean(row, 18));    // S → Immunization
-            s.setHeightCm(getInt(row, 19));            // T → Height
-            s.setWeightKg(getInt(row, 20));            // U → Weight
-            s.setVisionCheck(getString(row, 21));      // V → Vision
-            s.setCharacterCert(getString(row, 22));    // W → Character Cert
-            s.setFeeStatus(getString(row, 23));        // X → Fee Status
-            s.setAttendancePercent(getDouble(row, 24)); // Y → Attendance %
-            s.setUdiseUploaded(getBoolean(row, 25));   // Z → UDISE Uploaded
+            s.setStudentId(getString(row, 0));           // A
+            s.setFullName(getString(row, 1));            // B
+            s.setDateOfBirth(getDate(row, 2));           // C
+            s.setGender(getString(row, 3));              // D
+            s.setApaarId(getString(row, 4));             // E
+            s.setAadhaarNumber(getString(row, 5));       // F
+            s.setCategory(getString(row, 6));            // G
+            s.setAddress(getString(row, 7));             // H
+            s.setPhoto(getBoolean(row, 8));              // I
+            s.setPreviousSchoolTc(getBoolean(row, 9));   // J
+            s.setAdmissionClass(getString(row, 10));     // K
+            s.setAdmissionDate(getDate(row, 11));        // L
+            s.setEnrollmentNo(getString(row, 12));       // M
+            s.setPreviousMarksheet(getBoolean(row, 13)); // N
+            s.setBloodGroup(getString(row, 14));         // O
+            s.setAllergiesConditions(getString(row, 15)); // P
+            s.setImmunization(getBoolean(row, 16));      // Q
+            s.setHeightCm(getInt(row, 17));              // R
+            s.setWeightKg(getInt(row, 18));              // S
+            s.setVisionCheck(getString(row, 19));        // T
+            s.setCharacterCert(getString(row, 20));      // U
+            s.setFeeStatus(getString(row, 21));          // V
+            s.setAttendancePercent(getDouble(row, 22));  // W
+            s.setUdiseUploaded(getBoolean(row, 23));     // X
 
-            // === INCLUSIVE FAMILY PARSING ===
-            String rawFamily = getString(row, 8);      // I → Parent Name
-            String rawContact = getString(row, 12);    // M → Parent Contact (CORRECT!)
+            // === FAMILY ===
+            s.setFatherName(getString(row, 24));
+            s.setFatherContact(getString(row, 25));
+            s.setFatherAadhaar(getString(row, 26));
+            s.setMotherName(getString(row, 27));
+            s.setMotherContact(getString(row, 28));
+            s.setMotherAadhaar(getString(row, 29));
+            s.setGuardianName(getString(row, 30));
+            s.setGuardianContact(getString(row, 31));
+            s.setGuardianRelation(getString(row, 32));
+            s.setGuardianAadhaar(getString(row, 33));
+            s.setFamilyStatus(getString(row, 34));
+            s.setLanguagePreference(getString(row, 35));
 
-            if (rawFamily != null) {
-                rawFamily = rawFamily.trim();
-                if (rawFamily.contains(" & ")) {
-                    String[] parts = rawFamily.split(" & ", 2);
-                    s.setFatherName(parts[0].trim());
-                    s.setMotherName(parts.length > 1 ? parts[1].trim() : null);
-                    s.setFamilyStatus("Two Parents");
-                } else if (rawFamily.toLowerCase().contains("father")) {
-                    s.setFatherName(rawFamily.replaceAll("(?i)father of.*", "").trim());
-                    s.setFamilyStatus("Single Father");
-                } else if (rawFamily.toLowerCase().contains("mother")) {
-                    s.setMotherName(rawFamily.replaceAll("(?i)mother of.*", "").trim());
-                    s.setFamilyStatus("Single Mother");
-                } else {
-                    s.setGuardianName(rawFamily);
-                    s.setGuardianRelation(extractRelation(rawFamily));
-                    s.setFamilyStatus("Guardian");
-                }
-            }
+            // DEBUG
+            log.warn("Family: Father={}, Mother={}, Lang={}", 
+                s.getFatherContact(), s.getMotherContact(), s.getLanguagePreference());            
+ 
 
-            // Assign primary contact
-            if (rawContact != null) {
-                if (s.getFatherName() != null && s.getFatherContact() == null) {
-                    s.setFatherContact(rawContact);
-                } else if (s.getMotherName() != null && s.getMotherContact() == null) {
-                    s.setMotherContact(rawContact);
-                } else if (s.getGuardianName() != null) {
-                    s.setGuardianContact(rawContact);
-                }
-            }
+            // DEBUG: Show after assignment
+            log.warn("After assignment:");
+            log.warn("  Father Contact: {}", s.getFatherContact());
+            log.warn("  Mother Contact: {}", s.getMotherContact());
+            log.warn("  Guardian Contact: {}", s.getGuardianContact());
 
-            // VALIDATE: Must have student ID and at least one contact
-            // TEST MODE: Allow all valid rows
+            // VALIDATE & ADD
             if (s.getStudentId() != null && 
-            (s.getFatherContact() != null || s.getMotherContact() != null || s.getGuardianContact() != null)) {
-            System.out.println("Adding: " + s.getFullName() + " | Contact: " + s.getFatherContact());
-            students.add(s);
+                (s.getFatherContact() != null || s.getMotherContact() != null || s.getGuardianContact() != null)) {
+                log.warn("ADDING: {} | {}", s.getFullName(), s.getFatherContact());
+                students.add(s);
+            } else {
+                log.warn("SKIPPED: {} | ID={}", s.getFullName(), s.getStudentId() != null);
             }
-        }
-
+        } // ← END OF FOR LOOP
+    
         studentRepository.saveAll(students);
 
         String welcome = """
@@ -161,14 +164,10 @@ public class UploadController {
         Cell cell = row.getCell(col);
         if (cell == null) return null;
     
-        if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
-            java.util.Date utilDate = cell.getDateCellValue();
-            return utilDate.toInstant()
-                          .atZone(java.time.ZoneId.systemDefault())
-                          .toLocalDate();
-        } else if (cell.getCellType() == CellType.STRING) {
+        if (cell.getCellType() == CellType.STRING) {
+            String val = cell.getStringCellValue().trim();
             try {
-                return LocalDate.parse(cell.getStringCellValue().trim(), dateFormatter);
+                return LocalDate.parse(val, DateTimeFormatter.ofPattern("dd-MMM-yyyy"));
             } catch (Exception e) {
                 return null;
             }
@@ -213,6 +212,84 @@ public class UploadController {
 
     @GetMapping("/template.xlsx")
     public void downloadTemplate(HttpServletResponse response) throws IOException {
-        // Same as before
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Student_Template.xlsx");
+
+        try (Workbook workbook = new XSSFWorkbook();
+            OutputStream out = response.getOutputStream()) {
+
+            Sheet sheet = workbook.createSheet("Sheet1");
+
+            // === HEADER ROW ===
+            Row header = sheet.createRow(0);
+            String[] headers = {
+                "Student ID", "Full Name", "DOB", "Gender", "APAAR ID", "Aadhaar", "Category", "Address",
+                "Photo", "TC", "Admission Class", "Admission Date", "Enrollment No", "Marksheet",
+                "Blood Group", "Allergies", "Immunization", "Height", "Weight", "Vision",
+                "Character Cert", "Fee Status", "Attendance %", "UDISE Uploaded",
+                "Father Name", "Father Contact", "Father Aadhaar",
+                "Mother Name", "Mother Contact", "Mother Aadhaar",
+                "Guardian Name", "Guardian Contact", "Guardian Relation", "Guardian Aadhaar",
+                "Family Status", "Language"
+            };
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = header.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // === SAMPLE DATA ROW (ROW 1) ===
+            Row sample = sheet.createRow(1);
+
+            // Core Info
+            sample.createCell(0).setCellValue("1001");
+            sample.createCell(1).setCellValue("Priya Kumari");
+            sample.createCell(2).setCellValue("15-Jan-2015");
+            sample.createCell(3).setCellValue("Female");
+            sample.createCell(4).setCellValue("AP987654");
+            sample.createCell(5).setCellValue("123456789012");
+            sample.createCell(6).setCellValue("General");
+            sample.createCell(7).setCellValue("123 MG Road, Bengaluru");
+            sample.createCell(8).setCellValue("Yes");           // Photo (was 9)
+            sample.createCell(9).setCellValue("Yes");           // TC (was 10)
+            sample.createCell(10).setCellValue("5");            // Admission Class (was 11)
+            sample.createCell(11).setCellValue("01-Apr-2025");  // Admission Date (was 13)
+            sample.createCell(12).setCellValue("ENR1001");      // Enrollment No (was 14)
+            sample.createCell(13).setCellValue("Yes");          // Marksheet (was 15)
+            sample.createCell(14).setCellValue("O+");           // Blood Group
+            sample.createCell(15).setCellValue("None");         // Allergies
+            sample.createCell(16).setCellValue("Yes");          // Immunization
+            sample.createCell(17).setCellValue(135);            // Height
+            sample.createCell(18).setCellValue(35);             // Weight
+            sample.createCell(19).setCellValue("Normal");       // Vision
+            sample.createCell(20).setCellValue("Good");         // Character Cert
+            sample.createCell(21).setCellValue("Paid");         // Fee Status
+            sample.createCell(22).setCellValue(98.5);           // Attendance %
+            sample.createCell(23).setCellValue("No");           // UDISE Uploaded
+            sample.createCell(24).setCellValue("Rajesh Kumar");
+            sample.createCell(25).setCellValue("9987665397");
+            sample.createCell(26).setCellValue("111122223333");
+            sample.createCell(27).setCellValue("Sunita Devi");
+            sample.createCell(28).setCellValue("8765432109");
+            sample.createCell(29).setCellValue("444455556666");
+            sample.createCell(30).setCellValue(""); // Guardian Name
+            sample.createCell(31).setCellValue(""); // Guardian Contact
+            sample.createCell(32).setCellValue(""); // Relation
+            sample.createCell(33).setCellValue(""); // Aadhaar
+            sample.createCell(34).setCellValue("Two Parents");
+            sample.createCell(35).setCellValue("ENGLISH");
+            // Auto-size all columns
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+        }
     }
 }

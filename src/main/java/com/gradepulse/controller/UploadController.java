@@ -70,7 +70,6 @@ public class UploadController {
         }
 
         int rowNum = 0;
-        int rowNum = 0;
         for (Row row : sheet) {
             rowNum++;
             if (row.getRowNum() == 0) continue; // skip header row only
@@ -132,6 +131,27 @@ public class UploadController {
 
             previewList.add(dto);
         }
+
+        log.info("===== PREVIEW DATA =====");
+        log.info("Total rows processed: {}", previewList.size());
+        for (int i = 0; i < previewList.size(); i++) {
+            StudentUploadDto dto = previewList.get(i);
+            log.info("Student {}: ID={}, Name={}, DOB={}, Father={}, Valid={}, Errors={}", 
+                    i, dto.getStudentId(), dto.getFullName(), dto.getDateOfBirth(), 
+                    dto.getFatherName(), dto.isValid(), dto.getErrors());
+        }
+        log.info("========================");
+
+        model.addAttribute("students", previewList);
+        model.addAttribute("totalImported", previewList.size());
+        model.addAttribute("validCount", previewList.stream().filter(StudentUploadDto::isValid).count());
+
+        log.info("Preview ready: {} total, {} valid", previewList.size(), model.getAttribute("validCount"));
+        
+        workbook.close();
+        return "upload-preview";
+    }
+
     // Compare all fields and mark changes in dto.changedFields and dto.oldValues
     private void compareAndMarkChanges(StudentUploadDto dto, Student existing) {
         // Compare each field, mark changedFields and oldValues if different
@@ -285,24 +305,6 @@ public class UploadController {
         if (a == null && b == null) return true;
         if (a == null || b == null) return false;
         return a.equals(b);
-    }
-
-        log.info("===== PREVIEW DATA =====");
-        log.info("Total rows processed: {}", previewList.size());
-        for (int i = 0; i < previewList.size(); i++) {
-            StudentUploadDto dto = previewList.get(i);
-            log.info("Student {}: ID={}, Name={}, DOB={}, Father={}, Valid={}, Errors={}", 
-                    i, dto.getStudentId(), dto.getFullName(), dto.getDateOfBirth(), 
-                    dto.getFatherName(), dto.isValid(), dto.getErrors());
-        }
-        log.info("========================");
-
-        model.addAttribute("students", previewList);
-        model.addAttribute("totalImported", previewList.size());
-        model.addAttribute("validCount", previewList.stream().filter(StudentUploadDto::isValid).count());
-
-        log.info("Preview ready: {} total, {} valid", previewList.size(), model.getAttribute("validCount"));
-        return "upload-preview";
     }
 
     // === 3. Confirm & Save ===

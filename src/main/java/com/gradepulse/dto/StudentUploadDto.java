@@ -3,7 +3,9 @@ package com.gradepulse.dto;
 import lombok.Data;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class StudentUploadDto {
@@ -52,6 +54,6 @@ public class StudentUploadDto {
     private List<String> errors = new ArrayList<>();
 
     // Change tracking for preview
-    private Map<String, Boolean> changedFields = new java.util.HashMap<>();
-    private Map<String, Object> oldValues = new java.util.HashMap<>();
+    private Map<String, Boolean> changedFields = new HashMap<>();
+    private Map<String, Object> oldValues = new HashMap<>();
 }

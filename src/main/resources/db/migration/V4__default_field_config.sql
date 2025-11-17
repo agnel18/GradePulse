@@ -1,5 +1,7 @@
 -- V4__default_field_config.sql
 -- Pre-populate field_config table with all default student fields for GradePulse
+-- Delete existing records first to avoid duplicates
+DELETE FROM field_config;
 
 INSERT INTO field_config (field_name, display_name, field_type, required, active, sort_order)
 VALUES

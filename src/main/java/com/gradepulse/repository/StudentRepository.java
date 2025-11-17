@@ -21,4 +21,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
         String motherContact, 
         String guardianContact
     );
+
+    // Find by studentId
+    Student findByStudentId(String studentId);
 }

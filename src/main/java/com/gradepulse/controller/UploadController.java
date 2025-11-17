@@ -1,27 +1,27 @@
 package com.gradepulse.controller;
 
+import com.google.gson.Gson;
+import com.gradepulse.dto.StudentUploadDto;
 import com.gradepulse.model.Student;
 import com.gradepulse.repository.StudentRepository;
+import com.gradepulse.service.WhatsAppService;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import com.gradepulse.service.WhatsAppService;
-import org.apache.poi.ss.usermodel.DateUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.io.OutputStream;
-
-
+import java.util.Map;
 
 @Controller
 public class UploadController {
@@ -34,128 +34,396 @@ public class UploadController {
     @Autowired
     private WhatsAppService whatsAppService;
 
+    private final Gson gson = new Gson();
 
+    // === 1. Show upload page ===
     @GetMapping("/upload")
     public String uploadPage(Model model) {
+        log.info("Accessing /upload page");
         model.addAttribute("totalStudents", studentRepository.count());
         return "upload";
     }
 
+    // === 2. Handle upload → Preview ===
     @PostMapping("/upload")
     public String handleUpload(@RequestParam("file") MultipartFile file, Model model) throws IOException {
+        log.info("Starting file upload: {}", file.getOriginalFilename());
+
+        if (file.isEmpty()) {
+            log.warn("Empty file uploaded");
+            model.addAttribute("error", "Please select a file");
+            return "upload";
+        }
+
         Workbook workbook = new XSSFWorkbook(file.getInputStream());
         Sheet sheet = workbook.getSheetAt(0);
-        List<Student> students = new ArrayList<>();
+        List<StudentUploadDto> previewList = new ArrayList<>();
 
+        // Log headers
+        Row headerRow = sheet.getRow(0);
+        if (headerRow != null) {
+            StringBuilder headers = new StringBuilder();
+            for (int i = 0; i < headerRow.getLastCellNum(); i++) {
+                headers.append(getString(headerRow, i)).append(" | ");
+            }
+            log.info("Excel headers: {}", headers.toString());
+        }
+
+        int rowNum = 0;
+        int rowNum = 0;
         for (Row row : sheet) {
-            if (row.getRowNum() < 2) continue; // skip header + empty
+            rowNum++;
+            if (row.getRowNum() == 0) continue; // skip header row only
 
-            Student s = new Student();
-            s.setStudentId(getString(row, 0));           // A
-            s.setFullName(getString(row, 1));            // B
-            s.setDateOfBirth(getDate(row, 2));           // C
-            s.setGender(getString(row, 3));              // D
-            s.setApaarId(getString(row, 4));             // E
-            s.setAadhaarNumber(getString(row, 5));       // F
-            s.setCategory(getString(row, 6));            // G
-            s.setAddress(getString(row, 7));             // H
-            s.setPhoto(getBoolean(row, 8));              // I
-            s.setPreviousSchoolTc(getBoolean(row, 9));   // J
-            s.setAdmissionClass(getString(row, 10));     // K
-            s.setAdmissionDate(getDate(row, 11));        // L
-            s.setEnrollmentNo(getString(row, 12));       // M
-            s.setPreviousMarksheet(getBoolean(row, 13)); // N
-            s.setBloodGroup(getString(row, 14));         // O
-            s.setAllergiesConditions(getString(row, 15)); // P
-            s.setImmunization(getBoolean(row, 16));      // Q
-            s.setHeightCm(getInt(row, 17));              // R
-            s.setWeightKg(getInt(row, 18));              // S
-            s.setVisionCheck(getString(row, 19));        // T
-            s.setCharacterCert(getString(row, 20));      // U
-            s.setFeeStatus(getString(row, 21));          // V
-            s.setAttendancePercent(getDouble(row, 22));  // W
-            s.setUdiseUploaded(getBoolean(row, 23));     // X
+            log.info("Processing row {} (Excel row {})", rowNum - 1, row.getRowNum());
 
-            // === FAMILY ===
-            s.setFatherName(getString(row, 24));
-            s.setFatherContact(getString(row, 25));
-            s.setFatherAadhaar(getString(row, 26));
-            s.setMotherName(getString(row, 27));
-            s.setMotherContact(getString(row, 28));
-            s.setMotherAadhaar(getString(row, 29));
-            s.setGuardianName(getString(row, 30));
-            s.setGuardianContact(getString(row, 31));
-            s.setGuardianRelation(getString(row, 32));
-            s.setGuardianAadhaar(getString(row, 33));
-            s.setFamilyStatus(getString(row, 34));
-            s.setLanguagePreference(getString(row, 35));
+            StudentUploadDto dto = new StudentUploadDto();
+            dto.setStudentId(getString(row, 0));
+            dto.setFullName(getString(row, 1));
+            dto.setDateOfBirth(getDate(row, 2));
+            dto.setGender(getString(row, 3));
+            dto.setApaarId(getString(row, 4));
+            dto.setAadhaarNumber(getString(row, 5));
+            dto.setCategory(getString(row, 6));
+            dto.setAddress(getString(row, 7));
+            dto.setPhotoUrl(getString(row, 8));
+            dto.setPreviousSchoolTcUrl(getString(row, 9));
+            dto.setAdmissionClass(getString(row, 10));
+            dto.setAdmissionDate(getDate(row, 11));
+            dto.setEnrollmentNo(getString(row, 12));
+            dto.setPreviousMarksheetUrl(getString(row, 13));
+            dto.setBloodGroup(getString(row, 14));
+            dto.setAllergiesConditions(getString(row, 15));
+            dto.setImmunization(getBoolean(row, 16));
+            dto.setHeightCm(getInt(row, 17));
+            dto.setWeightKg(getInt(row, 18));
+            dto.setVisionCheck(getString(row, 19));
+            dto.setCharacterCertUrl(getString(row, 20));
+            dto.setFeeStatus(getString(row, 21));
+            dto.setAttendancePercent(getDouble(row, 22));
+            dto.setUdiseUploaded(getBoolean(row, 23));
 
-            // DEBUG
-            log.warn("Family: Father={}, Mother={}, Lang={}", 
-                s.getFatherContact(), s.getMotherContact(), s.getLanguagePreference());            
- 
+            // Family
+            dto.setFatherName(getString(row, 24));
+            dto.setFatherContact(getString(row, 25));
+            dto.setFatherAadhaar(getString(row, 26));
+            dto.setMotherName(getString(row, 27));
+            dto.setMotherContact(getString(row, 28));
+            dto.setMotherAadhaar(getString(row, 29));
+            dto.setGuardianName(getString(row, 30));
+            dto.setGuardianContact(getString(row, 31));
+            dto.setGuardianRelation(getString(row, 32));
+            dto.setGuardianAadhaar(getString(row, 33));
+            dto.setFamilyStatus(getString(row, 34));
+            dto.setLanguagePreference(getString(row, 35));
 
-            // DEBUG: Show after assignment
-            log.warn("After assignment:");
-            log.warn("  Father Contact: {}", s.getFatherContact());
-            log.warn("  Mother Contact: {}", s.getMotherContact());
-            log.warn("  Guardian Contact: {}", s.getGuardianContact());
+            // Validate
+            validateDto(dto);
 
-            // VALIDATE & ADD
-            if (s.getStudentId() != null && 
-                (s.getFatherContact() != null || s.getMotherContact() != null || s.getGuardianContact() != null)) {
-                log.warn("ADDING: {} | {}", s.getFullName(), s.getFatherContact());
-                students.add(s);
+            // Compare with existing DB record
+            if (dto.getStudentId() != null && !dto.getStudentId().isBlank()) {
+                Student existing = studentRepository.findByStudentId(dto.getStudentId());
+                if (existing != null) {
+                    compareAndMarkChanges(dto, existing);
+                }
+            }
+
+            log.info("Row {} → ID: {}, Name: {}, Valid: {}", rowNum - 2, dto.getStudentId(), dto.getFullName(), dto.isValid());
+
+            previewList.add(dto);
+        }
+    // Compare all fields and mark changes in dto.changedFields and dto.oldValues
+    private void compareAndMarkChanges(StudentUploadDto dto, Student existing) {
+        // Compare each field, mark changedFields and oldValues if different
+        if (!equalsObj(dto.getFullName(), existing.getFullName())) {
+            dto.getChangedFields().put("fullName", true);
+            dto.getOldValues().put("fullName", existing.getFullName());
+        }
+        if (!equalsObj(dto.getDateOfBirth(), existing.getDateOfBirth())) {
+            dto.getChangedFields().put("dateOfBirth", true);
+            dto.getOldValues().put("dateOfBirth", existing.getDateOfBirth());
+        }
+        if (!equalsObj(dto.getGender(), existing.getGender())) {
+            dto.getChangedFields().put("gender", true);
+            dto.getOldValues().put("gender", existing.getGender());
+        }
+        if (!equalsObj(dto.getApaarId(), existing.getApaarId())) {
+            dto.getChangedFields().put("apaarId", true);
+            dto.getOldValues().put("apaarId", existing.getApaarId());
+        }
+        if (!equalsObj(dto.getAadhaarNumber(), existing.getAadhaarNumber())) {
+            dto.getChangedFields().put("aadhaarNumber", true);
+            dto.getOldValues().put("aadhaarNumber", existing.getAadhaarNumber());
+        }
+        if (!equalsObj(dto.getCategory(), existing.getCategory())) {
+            dto.getChangedFields().put("category", true);
+            dto.getOldValues().put("category", existing.getCategory());
+        }
+        if (!equalsObj(dto.getAddress(), existing.getAddress())) {
+            dto.getChangedFields().put("address", true);
+            dto.getOldValues().put("address", existing.getAddress());
+        }
+        if (!equalsObj(dto.getPhotoUrl(), existing.getPhotoUrl())) {
+            dto.getChangedFields().put("photoUrl", true);
+            dto.getOldValues().put("photoUrl", existing.getPhotoUrl());
+        }
+        if (!equalsObj(dto.getPreviousSchoolTcUrl(), existing.getPreviousSchoolTcUrl())) {
+            dto.getChangedFields().put("previousSchoolTcUrl", true);
+            dto.getOldValues().put("previousSchoolTcUrl", existing.getPreviousSchoolTcUrl());
+        }
+        if (!equalsObj(dto.getAdmissionClass(), existing.getAdmissionClass())) {
+            dto.getChangedFields().put("admissionClass", true);
+            dto.getOldValues().put("admissionClass", existing.getAdmissionClass());
+        }
+        if (!equalsObj(dto.getAdmissionDate(), existing.getAdmissionDate())) {
+            dto.getChangedFields().put("admissionDate", true);
+            dto.getOldValues().put("admissionDate", existing.getAdmissionDate());
+        }
+        if (!equalsObj(dto.getEnrollmentNo(), existing.getEnrollmentNo())) {
+            dto.getChangedFields().put("enrollmentNo", true);
+            dto.getOldValues().put("enrollmentNo", existing.getEnrollmentNo());
+        }
+        if (!equalsObj(dto.getPreviousMarksheetUrl(), existing.getPreviousMarksheetUrl())) {
+            dto.getChangedFields().put("previousMarksheetUrl", true);
+            dto.getOldValues().put("previousMarksheetUrl", existing.getPreviousMarksheetUrl());
+        }
+        if (!equalsObj(dto.getBloodGroup(), existing.getBloodGroup())) {
+            dto.getChangedFields().put("bloodGroup", true);
+            dto.getOldValues().put("bloodGroup", existing.getBloodGroup());
+        }
+        if (!equalsObj(dto.getAllergiesConditions(), existing.getAllergiesConditions())) {
+            dto.getChangedFields().put("allergiesConditions", true);
+            dto.getOldValues().put("allergiesConditions", existing.getAllergiesConditions());
+        }
+        if (!equalsObj(dto.getImmunization(), existing.getImmunization())) {
+            dto.getChangedFields().put("immunization", true);
+            dto.getOldValues().put("immunization", existing.getImmunization());
+        }
+        if (!equalsObj(dto.getHeightCm(), existing.getHeightCm())) {
+            dto.getChangedFields().put("heightCm", true);
+            dto.getOldValues().put("heightCm", existing.getHeightCm());
+        }
+        if (!equalsObj(dto.getWeightKg(), existing.getWeightKg())) {
+            dto.getChangedFields().put("weightKg", true);
+            dto.getOldValues().put("weightKg", existing.getWeightKg());
+        }
+        if (!equalsObj(dto.getVisionCheck(), existing.getVisionCheck())) {
+            dto.getChangedFields().put("visionCheck", true);
+            dto.getOldValues().put("visionCheck", existing.getVisionCheck());
+        }
+        if (!equalsObj(dto.getCharacterCertUrl(), existing.getCharacterCertUrl())) {
+            dto.getChangedFields().put("characterCertUrl", true);
+            dto.getOldValues().put("characterCertUrl", existing.getCharacterCertUrl());
+        }
+        if (!equalsObj(dto.getAadhaarCardUrl(), existing.getAadhaarCardUrl())) {
+            dto.getChangedFields().put("aadhaarCardUrl", true);
+            dto.getOldValues().put("aadhaarCardUrl", existing.getAadhaarCardUrl());
+        }
+        if (!equalsObj(dto.getFeeStatus(), existing.getFeeStatus())) {
+            dto.getChangedFields().put("feeStatus", true);
+            dto.getOldValues().put("feeStatus", existing.getFeeStatus());
+        }
+        if (!equalsObj(dto.getAttendancePercent(), existing.getAttendancePercent())) {
+            dto.getChangedFields().put("attendancePercent", true);
+            dto.getOldValues().put("attendancePercent", existing.getAttendancePercent());
+        }
+        if (!equalsObj(dto.getUdiseUploaded(), existing.getUdiseUploaded())) {
+            dto.getChangedFields().put("udiseUploaded", true);
+            dto.getOldValues().put("udiseUploaded", existing.getUdiseUploaded());
+        }
+        if (!equalsObj(dto.getFatherName(), existing.getFatherName())) {
+            dto.getChangedFields().put("fatherName", true);
+            dto.getOldValues().put("fatherName", existing.getFatherName());
+        }
+        if (!equalsObj(dto.getFatherContact(), existing.getFatherContact())) {
+            dto.getChangedFields().put("fatherContact", true);
+            dto.getOldValues().put("fatherContact", existing.getFatherContact());
+        }
+        if (!equalsObj(dto.getFatherAadhaar(), existing.getFatherAadhaar())) {
+            dto.getChangedFields().put("fatherAadhaar", true);
+            dto.getOldValues().put("fatherAadhaar", existing.getFatherAadhaar());
+        }
+        if (!equalsObj(dto.getMotherName(), existing.getMotherName())) {
+            dto.getChangedFields().put("motherName", true);
+            dto.getOldValues().put("motherName", existing.getMotherName());
+        }
+        if (!equalsObj(dto.getMotherContact(), existing.getMotherContact())) {
+            dto.getChangedFields().put("motherContact", true);
+            dto.getOldValues().put("motherContact", existing.getMotherContact());
+        }
+        if (!equalsObj(dto.getMotherAadhaar(), existing.getMotherAadhaar())) {
+            dto.getChangedFields().put("motherAadhaar", true);
+            dto.getOldValues().put("motherAadhaar", existing.getMotherAadhaar());
+        }
+        if (!equalsObj(dto.getGuardianName(), existing.getGuardianName())) {
+            dto.getChangedFields().put("guardianName", true);
+            dto.getOldValues().put("guardianName", existing.getGuardianName());
+        }
+        if (!equalsObj(dto.getGuardianContact(), existing.getGuardianContact())) {
+            dto.getChangedFields().put("guardianContact", true);
+            dto.getOldValues().put("guardianContact", existing.getGuardianContact());
+        }
+        if (!equalsObj(dto.getGuardianRelation(), existing.getGuardianRelation())) {
+            dto.getChangedFields().put("guardianRelation", true);
+            dto.getOldValues().put("guardianRelation", existing.getGuardianRelation());
+        }
+        if (!equalsObj(dto.getGuardianAadhaar(), existing.getGuardianAadhaar())) {
+            dto.getChangedFields().put("guardianAadhaar", true);
+            dto.getOldValues().put("guardianAadhaar", existing.getGuardianAadhaar());
+        }
+        if (!equalsObj(dto.getFamilyStatus(), existing.getFamilyStatus())) {
+            dto.getChangedFields().put("familyStatus", true);
+            dto.getOldValues().put("familyStatus", existing.getFamilyStatus());
+        }
+        if (!equalsObj(dto.getLanguagePreference(), existing.getLanguagePreference())) {
+            dto.getChangedFields().put("languagePreference", true);
+            dto.getOldValues().put("languagePreference", existing.getLanguagePreference());
+        }
+    }
+
+    private boolean equalsObj(Object a, Object b) {
+        if (a == null && b == null) return true;
+        if (a == null || b == null) return false;
+        return a.equals(b);
+    }
+
+        log.info("===== PREVIEW DATA =====");
+        log.info("Total rows processed: {}", previewList.size());
+        for (int i = 0; i < previewList.size(); i++) {
+            StudentUploadDto dto = previewList.get(i);
+            log.info("Student {}: ID={}, Name={}, DOB={}, Father={}, Valid={}, Errors={}", 
+                    i, dto.getStudentId(), dto.getFullName(), dto.getDateOfBirth(), 
+                    dto.getFatherName(), dto.isValid(), dto.getErrors());
+        }
+        log.info("========================");
+
+        model.addAttribute("students", previewList);
+        model.addAttribute("totalImported", previewList.size());
+        model.addAttribute("validCount", previewList.stream().filter(StudentUploadDto::isValid).count());
+
+        log.info("Preview ready: {} total, {} valid", previewList.size(), model.getAttribute("validCount"));
+        return "upload-preview";
+    }
+
+    // === 3. Confirm & Save ===
+    @PostMapping("/upload/confirm")
+    public String confirmUpload(@RequestParam Map<String, String> allParams, Model model) {
+        // Parse the students[index].field format from form
+        Map<Integer, StudentUploadDto> dtoMap = new HashMap<>();
+        
+        for (Map.Entry<String, String> entry : allParams.entrySet()) {
+            String key = entry.getKey();
+            if (key.startsWith("students[")) {
+                int startIdx = key.indexOf('[') + 1;
+                int endIdx = key.indexOf(']');
+                int index = Integer.parseInt(key.substring(startIdx, endIdx));
+                String field = key.substring(endIdx + 2); // skip "].
+                
+                StudentUploadDto dto = dtoMap.computeIfAbsent(index, k -> new StudentUploadDto());
+                setDtoField(dto, field, entry.getValue());
+            }
+        }
+        
+        List<StudentUploadDto> dtos = new ArrayList<>(dtoMap.values());
+        log.info("Confirming upload: {} DTOs received", dtos.size());
+
+        List<Student> students = new ArrayList<>();
+        int savedCount = 0;
+
+        for (StudentUploadDto dto : dtos) {
+            if (!dto.isValid()) {
+                log.warn("Skipping invalid row: ID={}", dto.getStudentId());
+                continue;
+            }
+
+            // Check if student exists - update instead of creating duplicate
+            Student s = studentRepository.findByStudentId(dto.getStudentId());
+            if (s == null) {
+                s = new Student();
+                log.info("Creating new student: ID={}", dto.getStudentId());
             } else {
-                log.warn("SKIPPED: {} | ID={}", s.getFullName(), s.getStudentId() != null);
+                log.info("Updating existing student: ID={}", dto.getStudentId());
             }
-        } // ← END OF FOR LOOP
-    
-        studentRepository.saveAll(students);
 
-        String welcome = """
-            Welcome to GradePulse!
-            Reply with:
-            1 → English (default)
-            2 → हिंदी
-            3 → தமிழ்
-            4 → ಕನ್ನಡ
-            """;
+            s.setStudentId(dto.getStudentId());
+            s.setFullName(dto.getFullName());
+            s.setDateOfBirth(dto.getDateOfBirth());
+            s.setGender(dto.getGender());
+            s.setApaarId(dto.getApaarId());
+            s.setAadhaarNumber(dto.getAadhaarNumber());
+            s.setCategory(dto.getCategory());
+            s.setAddress(dto.getAddress());
+            s.setPhotoUrl(dto.getPhotoUrl());
+            s.setPreviousSchoolTcUrl(dto.getPreviousSchoolTcUrl());
+            s.setAdmissionClass(dto.getAdmissionClass());
+            s.setAdmissionDate(dto.getAdmissionDate());
+            s.setEnrollmentNo(dto.getEnrollmentNo());
+            s.setPreviousMarksheetUrl(dto.getPreviousMarksheetUrl());
+            s.setBloodGroup(dto.getBloodGroup());
+            s.setAllergiesConditions(dto.getAllergiesConditions());
+            s.setImmunization(dto.getImmunization());
+            s.setHeightCm(dto.getHeightCm());
+            s.setWeightKg(dto.getWeightKg());
+            s.setVisionCheck(dto.getVisionCheck());
+            s.setCharacterCertUrl(dto.getCharacterCertUrl());
+            s.setAadhaarCardUrl(dto.getAadhaarCardUrl());
+            s.setFeeStatus(dto.getFeeStatus());
+            s.setAttendancePercent(dto.getAttendancePercent());
+            s.setUdiseUploaded(dto.getUdiseUploaded());
 
+            s.setFatherName(dto.getFatherName());
+            s.setFatherContact(dto.getFatherContact());
+            s.setFatherAadhaar(dto.getFatherAadhaar());
+            s.setMotherName(dto.getMotherName());
+            s.setMotherContact(dto.getMotherContact());
+            s.setMotherAadhaar(dto.getMotherAadhaar());
+            s.setGuardianName(dto.getGuardianName());
+            s.setGuardianContact(dto.getGuardianContact());
+            s.setGuardianRelation(dto.getGuardianRelation());
+            s.setGuardianAadhaar(dto.getGuardianAadhaar());
+            s.setFamilyStatus(dto.getFamilyStatus());
+            s.setLanguagePreference(dto.getLanguagePreference());
+
+            if (s.getDynamicData() == null) {
+                s.setDynamicData(gson.toJson(new java.util.HashMap<>()));
+            }
+
+            students.add(s);
+            savedCount++;
+            log.info("Mapped & queued for save: ID={}", s.getStudentId());
+        }
+
+        if (!students.isEmpty()) {
+            studentRepository.saveAll(students);
+            log.info("Successfully saved {} students", savedCount);
+        }
+
+        // Send WhatsApp
+        String welcome = "Welcome to GradePulse! Reply with:\n1 → English\n2 → हिंदी\n3 → தமிழ்\n4 → ಕನ್ನಡ";
         for (Student s : students) {
-            if (s.getFatherContact() != null) {
+            if (s.getFatherContact() != null && s.getFatherContact().matches("\\d{10}")) {
                 whatsAppService.send(s.getFatherContact(), welcome);
+                log.info("WhatsApp sent to father: {}", s.getFatherContact());
             }
-            if (s.getMotherContact() != null) {
+            if (s.getMotherContact() != null && s.getMotherContact().matches("\\d{10}")) {
                 whatsAppService.send(s.getMotherContact(), welcome);
+                log.info("WhatsApp sent to mother: {}", s.getMotherContact());
             }
         }
 
-
-        workbook.close();
-
-        model.addAttribute("message", 
-            "SUCCESS! " + students.size() + " students saved → Ready for WhatsApp & UDISE+");
+        model.addAttribute("message", "SUCCESS! " + savedCount + " students saved.");
         model.addAttribute("totalStudents", studentRepository.count());
         return "upload";
     }
 
-    // === HELPER METHODS ===
+    // === Helper Methods ===
     private String getString(Row row, int col) {
         Cell cell = row.getCell(col);
         if (cell == null) return null;
-    
         return switch (cell.getCellType()) {
             case STRING -> cell.getStringCellValue().trim();
-            case NUMERIC -> {
-                if (DateUtil.isCellDateFormatted(cell)) {
-                    yield cell.getDateCellValue().toString();
-                } else {
-                    yield new java.math.BigDecimal(cell.getNumericCellValue()).toPlainString();
-                }
-            }
+            case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());
             case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
-            case FORMULA -> cell.getStringCellValue();
             default -> null;
         };
     }
@@ -163,133 +431,155 @@ public class UploadController {
     private LocalDate getDate(Row row, int col) {
         Cell cell = row.getCell(col);
         if (cell == null) return null;
-    
-        if (cell.getCellType() == CellType.STRING) {
-            String val = cell.getStringCellValue().trim();
+        
+        // Handle numeric date cells (Excel date format)
+        if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
+            return cell.getDateCellValue().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+        }
+        
+        // Handle string date cells
+        String str = getString(row, col);
+        if (str == null || str.trim().isEmpty()) return null;
+        
+        // Try multiple date formats
+        String[] patterns = {
+            "dd-MMM-yyyy",  // 15-Jan-2015
+            "dd-MM-yyyy",   // 15-01-2015
+            "yyyy-MM-dd",   // 2015-01-15
+            "dd/MM/yyyy",   // 15/01/2015
+            "MM/dd/yyyy"    // 01/15/2015
+        };
+        
+        for (String pattern : patterns) {
             try {
-                return LocalDate.parse(val, DateTimeFormatter.ofPattern("dd-MMM-yyyy"));
-            } catch (Exception e) {
-                return null;
+                return LocalDate.parse(str, DateTimeFormatter.ofPattern(pattern));
+            } catch (Exception ignored) {
+                // Try next pattern
             }
         }
+        
+        log.warn("Could not parse date: {}", str);
         return null;
     }
 
+    private Boolean getBoolean(Row row, int col) {
+        String val = getString(row, col);
+        if (val == null) return null;
+        return val.equalsIgnoreCase("yes") || val.equalsIgnoreCase("true") || val.equals("1");
+    }
+
     private Integer getInt(Row row, int col) {
+        String val = getString(row, col);
+        if (val == null) return null;
         try {
-            return (int) row.getCell(col).getNumericCellValue();
-        } catch (Exception e) {
+            return Integer.parseInt(val);
+        } catch (NumberFormatException e) {
             return null;
         }
     }
 
     private Double getDouble(Row row, int col) {
+        String val = getString(row, col);
+        if (val == null) return null;
         try {
-            return row.getCell(col).getNumericCellValue();
-        } catch (Exception e) {
+            return Double.parseDouble(val);
+        } catch (NumberFormatException e) {
             return null;
         }
     }
 
-    private Boolean getBoolean(Row row, int col) {
+    private void validateDto(StudentUploadDto dto) {
+        log.info("Validating: ID={}, Name={}", dto.getStudentId(), dto.getFullName());
+
+        if (dto.getStudentId() == null || dto.getStudentId().trim().isEmpty()) {
+            dto.setValid(false);
+            dto.getErrors().add("Student ID is required");
+        }
+        if (dto.getFullName() == null || dto.getFullName().trim().isEmpty()) {
+            dto.setValid(false);
+            dto.getErrors().add("Full Name is required");
+        }
+        if ((dto.getFatherContact() == null || dto.getFatherContact().trim().isEmpty()) &&
+            (dto.getMotherContact() == null || dto.getMotherContact().trim().isEmpty()) &&
+            (dto.getGuardianContact() == null || dto.getGuardianContact().trim().isEmpty())) {
+            dto.setValid(false);
+            dto.getErrors().add("At least one contact (Father/Mother/Guardian) is required");
+        }
+        if (dto.getFatherContact() != null && !dto.getFatherContact().matches("\\d{10}")) {
+            dto.setValid(false);
+            dto.getErrors().add("Father Contact must be 10 digits");
+        }
+        if (dto.getMotherContact() != null && !dto.getMotherContact().matches("\\d{10}")) {
+            dto.setValid(false);
+            dto.getErrors().add("Mother Contact must be 10 digits");
+        }
+
+        log.info("Validation result: Valid={}, Errors={}", dto.isValid(), dto.getErrors());
+    }
+    
+    private void setDtoField(StudentUploadDto dto, String field, String value) {
+        if (value == null || value.trim().isEmpty()) return;
+
         try {
-            String val = getString(row, col);
-            return "Yes".equalsIgnoreCase(val);
+            switch (field) {
+                case "studentId" -> dto.setStudentId(value);
+                case "fullName" -> dto.setFullName(value);
+                case "dateOfBirth" -> dto.setDateOfBirth(LocalDate.parse(value));
+                case "gender" -> dto.setGender(value);
+                case "apaarId" -> dto.setApaarId(value);
+                case "aadhaarNumber" -> dto.setAadhaarNumber(value);
+                case "category" -> dto.setCategory(value);
+                case "address" -> dto.setAddress(value);
+                case "photoUrl" -> dto.setPhotoUrl(value);
+                case "previousSchoolTcUrl" -> dto.setPreviousSchoolTcUrl(value);
+                case "admissionClass" -> dto.setAdmissionClass(value);
+                case "admissionDate" -> dto.setAdmissionDate(LocalDate.parse(value));
+                case "enrollmentNo" -> dto.setEnrollmentNo(value);
+                case "previousMarksheetUrl" -> dto.setPreviousMarksheetUrl(value);
+                case "bloodGroup" -> dto.setBloodGroup(value);
+                case "allergiesConditions" -> dto.setAllergiesConditions(value);
+                case "immunization" -> dto.setImmunization(parseBooleanValue(value));
+                case "heightCm" -> dto.setHeightCm(parseIntegerValue(value));
+                case "weightKg" -> dto.setWeightKg(parseIntegerValue(value));
+                case "visionCheck" -> dto.setVisionCheck(value);
+                case "characterCertUrl" -> dto.setCharacterCertUrl(value);
+                case "aadhaarCardUrl" -> dto.setAadhaarCardUrl(value);
+                case "feeStatus" -> dto.setFeeStatus(value);
+                case "attendancePercent" -> dto.setAttendancePercent(Double.parseDouble(value));
+                case "udiseUploaded" -> dto.setUdiseUploaded(parseBooleanValue(value));
+                case "fatherName" -> dto.setFatherName(value);
+                case "fatherContact" -> dto.setFatherContact(value);
+                case "fatherAadhaar" -> dto.setFatherAadhaar(value);
+                case "motherName" -> dto.setMotherName(value);
+                case "motherContact" -> dto.setMotherContact(value);
+                case "motherAadhaar" -> dto.setMotherAadhaar(value);
+                case "guardianName" -> dto.setGuardianName(value);
+                case "guardianContact" -> dto.setGuardianContact(value);
+                case "guardianRelation" -> dto.setGuardianRelation(value);
+                case "guardianAadhaar" -> dto.setGuardianAadhaar(value);
+                case "familyStatus" -> dto.setFamilyStatus(value);
+                case "languagePreference" -> dto.setLanguagePreference(value);
+            }
         } catch (Exception e) {
-            return false;
+            log.warn("Failed to set field {} = {}: {}", field, value, e.getMessage());
         }
     }
 
-    private String extractRelation(String name) {
-        if (name == null) return "Guardian";
-        String lower = name.toLowerCase();
-        if (lower.contains("uncle")) return "Uncle";
-        if (lower.contains("aunt")) return "Aunt";
-        if (lower.contains("grand")) return "Grandparent";
-        if (lower.contains("guardian")) return "Legal Guardian";
-        return "Guardian";
+    // Helper to parse Yes/No/True/False to Boolean
+    private Boolean parseBooleanValue(String value) {
+        if (value == null) return null;
+        String v = value.trim().toLowerCase();
+        if (v.equals("yes") || v.equals("true") || v.equals("1")) return true;
+        if (v.equals("no") || v.equals("false") || v.equals("0")) return false;
+        return null;
     }
 
-    @GetMapping("/template.xlsx")
-    public void downloadTemplate(HttpServletResponse response) throws IOException {
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=Student_Template.xlsx");
-
-        try (Workbook workbook = new XSSFWorkbook();
-            OutputStream out = response.getOutputStream()) {
-
-            Sheet sheet = workbook.createSheet("Sheet1");
-
-            // === HEADER ROW ===
-            Row header = sheet.createRow(0);
-            String[] headers = {
-                "Student ID", "Full Name", "DOB", "Gender", "APAAR ID", "Aadhaar", "Category", "Address",
-                "Photo", "TC", "Admission Class", "Admission Date", "Enrollment No", "Marksheet",
-                "Blood Group", "Allergies", "Immunization", "Height", "Weight", "Vision",
-                "Character Cert", "Fee Status", "Attendance %", "UDISE Uploaded",
-                "Father Name", "Father Contact", "Father Aadhaar",
-                "Mother Name", "Mother Contact", "Mother Aadhaar",
-                "Guardian Name", "Guardian Contact", "Guardian Relation", "Guardian Aadhaar",
-                "Family Status", "Language"
-            };
-
-            CellStyle headerStyle = workbook.createCellStyle();
-            Font headerFont = workbook.createFont();
-            headerFont.setBold(true);
-            headerStyle.setFont(headerFont);
-
-            for (int i = 0; i < headers.length; i++) {
-                Cell cell = header.createCell(i);
-                cell.setCellValue(headers[i]);
-                cell.setCellStyle(headerStyle);
-            }
-
-            // === SAMPLE DATA ROW (ROW 1) ===
-            Row sample = sheet.createRow(1);
-
-            // Core Info
-            sample.createCell(0).setCellValue("1001");
-            sample.createCell(1).setCellValue("Priya Kumari");
-            sample.createCell(2).setCellValue("15-Jan-2015");
-            sample.createCell(3).setCellValue("Female");
-            sample.createCell(4).setCellValue("AP987654");
-            sample.createCell(5).setCellValue("123456789012");
-            sample.createCell(6).setCellValue("General");
-            sample.createCell(7).setCellValue("123 MG Road, Bengaluru");
-            sample.createCell(8).setCellValue("Yes");           // Photo (was 9)
-            sample.createCell(9).setCellValue("Yes");           // TC (was 10)
-            sample.createCell(10).setCellValue("5");            // Admission Class (was 11)
-            sample.createCell(11).setCellValue("01-Apr-2025");  // Admission Date (was 13)
-            sample.createCell(12).setCellValue("ENR1001");      // Enrollment No (was 14)
-            sample.createCell(13).setCellValue("Yes");          // Marksheet (was 15)
-            sample.createCell(14).setCellValue("O+");           // Blood Group
-            sample.createCell(15).setCellValue("None");         // Allergies
-            sample.createCell(16).setCellValue("Yes");          // Immunization
-            sample.createCell(17).setCellValue(135);            // Height
-            sample.createCell(18).setCellValue(35);             // Weight
-            sample.createCell(19).setCellValue("Normal");       // Vision
-            sample.createCell(20).setCellValue("Good");         // Character Cert
-            sample.createCell(21).setCellValue("Paid");         // Fee Status
-            sample.createCell(22).setCellValue(98.5);           // Attendance %
-            sample.createCell(23).setCellValue("No");           // UDISE Uploaded
-            sample.createCell(24).setCellValue("Rajesh Kumar");
-            sample.createCell(25).setCellValue("9987665397");
-            sample.createCell(26).setCellValue("111122223333");
-            sample.createCell(27).setCellValue("Sunita Devi");
-            sample.createCell(28).setCellValue("8765432109");
-            sample.createCell(29).setCellValue("444455556666");
-            sample.createCell(30).setCellValue(""); // Guardian Name
-            sample.createCell(31).setCellValue(""); // Guardian Contact
-            sample.createCell(32).setCellValue(""); // Relation
-            sample.createCell(33).setCellValue(""); // Aadhaar
-            sample.createCell(34).setCellValue("Two Parents");
-            sample.createCell(35).setCellValue("ENGLISH");
-            // Auto-size all columns
-            for (int i = 0; i < headers.length; i++) {
-                sheet.autoSizeColumn(i);
-            }
-
-            workbook.write(out);
+    // Helper to parse integer from string, fallback to null
+    private Integer parseIntegerValue(String value) {
+        try {
+            return (int) Math.round(Double.parseDouble(value));
+        } catch (Exception e) {
+            return null;
         }
     }
 }

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Field Builder - GradePulse</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .field-card {
+            border-left: 4px solid #0d6efd;
+            transition: all 0.3s;
+            cursor: move;
+            background: white;
+        }
+        .field-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        .field-card.inactive {
+            border-left-color: #6c757d;
+            opacity: 0.7;
+            background-color: #f8f9fa;
+        }
+        .badge-type {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .drag-handle {
+            cursor: grab;
+            color: #6c757d;
+        }
+        .stats-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-sliders-h me-2"></i>
+            <strong>GradePulse</strong> - Field Builder
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/upload">
+                        <i class="fas fa-upload"></i> Upload
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/dashboard">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="/fields">
+                        <i class="fas fa-sliders-h"></i> Fields
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-cogs text-primary"></i> Field Configuration</h2>
+            <p class="text-muted mb-0">Manage custom fields for your student data</p>
+        </div>
+        <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addFieldModal">
+            <i class="fas fa-plus-circle me-2"></i> Add Custom Field
+        </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card stats-card bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-0" th:text="${totalFields}">0</h3>
+                            <p class="mb-0">Total Fields</p>
+                        </div>
+                        <i class="fas fa-database fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card stats-card bg-gradient text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-0" th:text="${activeFields}">0</h3>
+                            <p class="mb-0">Active Fields</p>
+                        </div>
+                        <i class="fas fa-check-circle fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card stats-card bg-gradient text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-0" th:text="${customFields}">0</h3>
+                            <p class="mb-0">Custom Fields</p>
+                        </div>
+                        <i class="fas fa-star fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert -->
+    <div id="alertContainer"></div>
+
+    <!-- Field List -->
+    <div class="row">
+        <div th:each="field : ${fields}" class="col-md-6 mb-3">
+            <div th:class="'card field-card ' + (${field.active} ? '' : 'inactive')">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-0" th:text="${field.displayName}">Field Name</h5>
+                            <p class="text-muted small mb-2">
+                                <code th:text="${field.fieldName}">field_name</code>
+                            </p>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <span th:class="'badge ' + (${field.fieldType} == 'FILE_URL' ? 'bg-warning' : 'bg-info') + ' badge-type'" 
+                                      th:text="${field.fieldType}">STRING</span>
+                                <span th:if="${field.required}" class="badge bg-danger badge-type">Required</span>
+                                <span th:unless="${field.active}" class="badge bg-secondary badge-type">Inactive</span>
+                            </div>
+                        </div>
+                        <div class="btn-group-vertical btn-group-sm">
+                            <button class="btn btn-outline-primary btn-sm toggle-field-btn" 
+                                    th:data-id="${field.id}"
+                                    th:title="${field.active} ? 'Deactivate' : 'Activate'">
+                                <i th:class="'fas ' + (${field.active} ? 'fa-toggle-on' : 'fa-toggle-off')"></i>
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm delete-field-btn" 
+                                    th:data-id="${field.id}"
+                                    th:data-name="${field.displayName}"
+                                    title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Field Modal -->
+<div class="modal fade" id="addFieldModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Custom Field</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addFieldForm">
+                    <div class="mb-3">
+                        <label class="form-label">Field Name (Internal) *</label>
+                        <input type="text" class="form-control" id="fieldName" required
+                               placeholder="e.g., caste_certificate_url" pattern="[a-z_]+">
+                        <small class="text-muted">Lowercase letters and underscores only</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Display Name *</label>
+                        <input type="text" class="form-control" id="displayName" required
+                               placeholder="e.g., Caste Certificate URL">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Field Type *</label>
+                        <select class="form-select" id="fieldType" required>
+                            <option value="STRING">Text (STRING)</option>
+                            <option value="NUMBER">Number (NUMBER)</option>
+                            <option value="DATE">Date (DATE)</option>
+                            <option value="BOOLEAN">Yes/No (BOOLEAN)</option>
+                            <option value="FILE_URL">File URL (FILE_URL)</option>
+                        </select>
+                        <small class="text-muted">FILE_URL is for Google Drive links</small>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="required">
+                        <label class="form-check-label" for="required">Required Field</label>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="active" checked>
+                        <label class="form-check-label" for="active">Active</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveField()">
+                    <i class="fas fa-save"></i> Save Field
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    console.log('Fields page JavaScript loaded successfully');
+    
+    function showAlert(message, type = 'success') {
+        const alert = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+        document.getElementById('alertContainer').innerHTML = alert;
+        setTimeout(() => {
+            const alertEl = document.querySelector('.alert');
+            if (alertEl) alertEl.remove();
+        }, 3000);
+    }
+
+    async function saveField() {
+        console.log('saveField() function called');
+        const data = {
+            fieldName: document.getElementById('fieldName').value,
+            displayName: document.getElementById('displayName').value,
+            fieldType: document.getElementById('fieldType').value,
+            required: document.getElementById('required').checked,
+            active: document.getElementById('active').checked
+        };
+        
+        console.log('Form data:', data);
+
+        try {
+            const response = await fetch('/fields/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            
+            console.log('Response status:', response.status);
+            
+            if (response.ok) {
+                showAlert('Field added successfully!', 'success');
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addFieldModal'));
+                if (modal) modal.hide();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                const error = await response.json();
+                showAlert(error.error || 'Failed to add field', 'danger');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('Error: ' + error.message, 'danger');
+        }
+    }
+
+    async function toggleField(id) {
+        try {
+            const response = await fetch(`/fields/toggle/${id}`, {method: 'POST'});
+            if (response.ok) {
+                showAlert('Field status updated!', 'success');
+                setTimeout(() => location.reload(), 1000);
+            }
+        } catch (error) {
+            showAlert('Error: ' + error.message, 'danger');
+        }
+    }
+
+    async function deleteField(id, name) {
+        if (!confirm(`Delete field "${name}"? This cannot be undone.`)) return;
+        
+        try {
+            const response = await fetch(`/fields/delete/${id}`, {method: 'POST'});
+            if (response.ok) {
+                showAlert('Field deleted successfully!', 'success');
+                setTimeout(() => location.reload(), 1000);
+            }
+        } catch (error) {
+            showAlert('Error: ' + error.message, 'danger');
+        }
+    }
+
+    // Event listeners for buttons
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle field buttons
+        document.querySelectorAll('.toggle-field-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.id;
+                toggleField(id);
+            });
+        });
+
+        // Delete field buttons
+        document.querySelectorAll('.delete-field-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const name = this.dataset.name;
+                deleteField(id, name);
+            });
+        });
+    });
+</script>
+</body>
+</html>

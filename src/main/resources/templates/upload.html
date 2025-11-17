@@ -2,51 +2,209 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Upload Grades - GradePulse</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Students - GradePulse</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: 'Google Sans', sans-serif; }
-        .card { border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .upload-area { border: 4px dashed #fff; border-radius: 15px; padding: 40px; text-align: center; transition: 0.3s; }
-        .upload-area:hover { background: rgba(255,255,255,0.1); }
-        .btn-upload { height: 56px; font-size: 18px; border-radius: 12px; }
-        .template-btn { font-size: 14px; }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .upload-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 3rem;
+            margin-top: 5rem;
+        }
+        .upload-icon {
+            font-size: 5rem;
+            color: #667eea;
+            margin-bottom: 2rem;
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        .file-input-label {
+            display: block;
+            padding: 2rem;
+            background: #f8f9fa;
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .file-input-label:hover {
+            background: #e9ecef;
+            border-color: #764ba2;
+        }
+        .file-selected {
+            background: #d4edda !important;
+            border-color: #28a745 !important;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
     </style>
 </head>
-<body class="text-white">
-<div class="container mt-5">
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark" style="background: transparent;">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-graduation-cap me-2"></i>
+            <strong>GradePulse</strong>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/upload">
+                        <i class="fas fa-upload"></i> Upload
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/dashboard">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/fields">
+                        <i class="fas fa-sliders-h"></i> Fields
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
     <div class="row justify-content-center">
-        <div class="col-lg-6">
-            <div class="card bg-white text-dark">
-                <div class="card-body p-5">
-                    <h2 class="text-center mb-4"><i class="fas fa-users text-primary"></i> Upload Student Info</h2>
-                    <form th:action="@{/upload}" method="post" enctype="multipart/form-data">
-                        <div class="upload-area mb-4">
-                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
-                            <input type="file" name="file" accept=".xlsx" required class="form-control form-control-lg" />
+        <div class="col-lg-8 col-md-10">
+            <div class="upload-container">
+                <div class="text-center">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <h2 class="mb-3">Upload Student Excel File</h2>
+                    <p class="text-muted mb-4">Upload your Excel file (.xlsx) with student data</p>
+                </div>
+
+                <form method="post" enctype="multipart/form-data" th:action="@{/upload}" id="uploadForm">
+                    <div class="file-input-wrapper mb-4">
+                        <input type="file" name="file" accept=".xlsx" id="fileInput" required />
+                        <label class="file-input-label" for="fileInput" id="fileLabel">
+                            <i class="fas fa-file-excel fa-3x text-success mb-3"></i>
+                            <h5>Click to select or drag & drop</h5>
+                            <p class="text-muted mb-0">Excel files (.xlsx) only</p>
+                        </label>
+                    </div>
+
+                    <div id="fileName" class="alert alert-info" style="display: none;">
+                        <i class="fas fa-file-check me-2"></i>
+                        <span id="fileNameText"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100" id="uploadBtn" disabled>
+                        <i class="fas fa-upload me-2"></i> Upload & Map Fields
+                    </button>
+                </form>
+
+                <div th:if="${message}" class="alert alert-success mt-3" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span th:text="${message}"></span>
+                </div>
+
+                <div th:if="${totalStudents}" class="stats-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-0" th:text="${totalStudents}">0</h4>
+                            <p class="mb-0">Total Students in Database</p>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-upload w-100">
-                            <i class="fas fa-paper-plane"></i> Upload → Save & Notify Parents
-                        </button>
-                    </form>
-                    <div class="text-center mt-3">
-                        <a href="/template.xlsx" class="template-btn text-muted">
-                            <i class="fas fa-download"></i> Download Template
-                        </a>
+                        <i class="fas fa-users fa-3x opacity-50"></i>
                     </div>
-                    <div th:if="${message}" class="alert alert-success mt-4 text-center">
-                        <i class="fas fa-check-circle"></i> <span th:text="${message}"></span>
-                    </div>
-                    <div class="alert alert-info text-center mt-3">
-                        <i class="fas fa-users"></i> 
-                        Total students in system: <strong th:text="${totalStudents}">0</strong>
-                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <p class="text-muted">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Need help? Check the <a href="https://github.com/agnel18/GradePulse/blob/main/docs/DOCUMENT_UPLOAD_GUIDE.md" target="_blank">Upload Guide</a>
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('fileInput');
+    const fileLabel = document.getElementById('fileLabel');
+    const fileName = document.getElementById('fileName');
+    const fileNameText = document.getElementById('fileNameText');
+    const uploadBtn = document.getElementById('uploadBtn');
+
+    console.log('Upload page loaded', {fileInput, fileLabel, fileName, fileNameText, uploadBtn});
+
+    fileInput.addEventListener('change', function(e) {
+        console.log('File input changed', this.files);
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            console.log('File selected:', file.name, file.type);
+            fileLabel.classList.add('file-selected');
+            fileName.style.display = 'block';
+            fileNameText.textContent = file.name + ' (' + (file.size / 1024).toFixed(2) + ' KB)';
+            uploadBtn.disabled = false;
+            console.log('Button enabled');
+        }
+    });
+
+    // Drag and drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        fileLabel.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        fileLabel.addEventListener(eventName, () => {
+            fileLabel.style.background = '#e9ecef';
+            fileLabel.style.borderColor = '#764ba2';
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        fileLabel.addEventListener(eventName, () => {
+            fileLabel.style.background = '#f8f9fa';
+            fileLabel.style.borderColor = '#667eea';
+        }, false);
+    });
+
+    fileLabel.addEventListener('drop', function(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+        fileInput.dispatchEvent(new Event('change', {bubbles: true}));
+    });
+});
+</script>
 </body>
 </html>

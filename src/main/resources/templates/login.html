@@ -5,34 +5,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>GradePulse - Teacher Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+        .login-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 0.75rem;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .input-icon {
+            position: relative;
+        }
+        .input-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #667eea;
+        }
+        .input-icon input {
+            padding-left: 45px;
+        }
+    </style>
 </head>
-<body class="bg-light">
-<div class="container mt-5">
+<body>
+<div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-4">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white text-center">
-                    <h4>GradePulse</h4>
+        <div class="col-lg-5 col-md-7 col-sm-9">
+            <div class="login-container">
+                <div class="login-header">
+                    <i class="fas fa-graduation-cap login-icon"></i>
+                    <h2 class="mb-0">GradePulse</h2>
+                    <p class="mb-0">School Management System</p>
                 </div>
-                <div class="card-body">
+                <div class="p-5">
+                    <h4 class="text-center mb-4">Teacher Login</h4>
                     <form th:action="@{/login}" method="post">
-                        <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" name="username" class="form-control" placeholder="agnel@test.com" required>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-envelope text-primary me-2"></i>Email Address
+                            </label>
+                            <div class="input-icon">
+                                <i class="fas fa-user"></i>
+                                <input type="email" name="username" class="form-control form-control-lg" 
+                                       placeholder="agnel@test.com" required>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Password</label>
-                            <input type="password" name="password" class="form-control" placeholder="123456" required>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-lock text-primary me-2"></i>Password
+                            </label>
+                            <div class="input-icon">
+                                <i class="fas fa-key"></i>
+                                <input type="password" name="password" class="form-control form-control-lg" 
+                                       placeholder="••••••" required>
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                        <button type="submit" class="btn btn-primary btn-login w-100 btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </button>
                     </form>
-                    <div class="text-center mt-3">
-                        <small>Test: agnel@test.com / 123456</small>
+                    <div class="text-center mt-4">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Test Credentials:</strong><br>
+                            Email: agnel@test.com<br>
+                            Password: 123456
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -33,11 +33,11 @@ public class Student {
 
     private String address;
 
+    @Column(name = "photo_url", columnDefinition = "TEXT")
+    private String photoUrl;
 
-    private Boolean photo;
-
-    @Column(name = "previous_school_tc")
-    private Boolean previousSchoolTc;
+    @Column(name = "previous_school_tc_url", columnDefinition = "TEXT")
+    private String previousSchoolTcUrl;
 
     @Column(name = "admission_class")
     private String admissionClass;
@@ -48,8 +48,8 @@ public class Student {
     @Column(name = "enrollment_no", unique = true)
     private String enrollmentNo;
 
-    @Column(name = "previous_marksheet")
-    private Boolean previousMarksheet;
+    @Column(name = "previous_marksheet_url", columnDefinition = "TEXT")
+    private String previousMarksheetUrl;
 
     @Column(name = "blood_group")
     private String bloodGroup;
@@ -68,8 +68,11 @@ public class Student {
     @Column(name = "vision_check")
     private String visionCheck;
 
-    @Column(name = "character_cert")
-    private String characterCert;
+    @Column(name = "character_cert_url", columnDefinition = "TEXT")
+    private String characterCertUrl;
+
+    @Column(name = "aadhaar_card_url", columnDefinition = "TEXT")
+    private String aadhaarCardUrl;
 
     @Column(name = "fee_status")
     private String feeStatus;
@@ -118,6 +121,9 @@ public class Student {
 
     @Column(name = "language_preference")
     private String languagePreference = "ENGLISH"; // Default
+
+    @Column(columnDefinition = "JSON")
+    private String dynamicData;   // stores {"custom_field":"value", ...}
 
     // Constructors
     public Student() {}
@@ -175,11 +181,11 @@ public class Student {
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
 
-    public Boolean getPhoto() { return photo; }
-    public void setPhoto(Boolean photo) { this.photo = photo; }
+    public String getPhotoUrl() { return photoUrl; }
+    public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; }
 
-    public Boolean getPreviousSchoolTc() { return previousSchoolTc; }
-    public void setPreviousSchoolTc(Boolean previousSchoolTc) { this.previousSchoolTc = previousSchoolTc; }
+    public String getPreviousSchoolTcUrl() { return previousSchoolTcUrl; }
+    public void setPreviousSchoolTcUrl(String previousSchoolTcUrl) { this.previousSchoolTcUrl = previousSchoolTcUrl; }
 
     public String getAdmissionClass() { return admissionClass; }
     public void setAdmissionClass(String admissionClass) { this.admissionClass = admissionClass; }
@@ -190,8 +196,8 @@ public class Student {
     public String getEnrollmentNo() { return enrollmentNo; }
     public void setEnrollmentNo(String enrollmentNo) { this.enrollmentNo = enrollmentNo; }
 
-    public Boolean getPreviousMarksheet() { return previousMarksheet; }
-    public void setPreviousMarksheet(Boolean previousMarksheet) { this.previousMarksheet = previousMarksheet; }
+    public String getPreviousMarksheetUrl() { return previousMarksheetUrl; }
+    public void setPreviousMarksheetUrl(String previousMarksheetUrl) { this.previousMarksheetUrl = previousMarksheetUrl; }
 
     public String getBloodGroup() { return bloodGroup; }
     public void setBloodGroup(String bloodGroup) { this.bloodGroup = bloodGroup; }
@@ -211,8 +217,11 @@ public class Student {
     public String getVisionCheck() { return visionCheck; }
     public void setVisionCheck(String visionCheck) { this.visionCheck = visionCheck; }
 
-    public String getCharacterCert() { return characterCert; }
-    public void setCharacterCert(String characterCert) { this.characterCert = characterCert; }
+    public String getCharacterCertUrl() { return characterCertUrl; }
+    public void setCharacterCertUrl(String characterCertUrl) { this.characterCertUrl = characterCertUrl; }
+
+    public String getAadhaarCardUrl() { return aadhaarCardUrl; }
+    public void setAadhaarCardUrl(String aadhaarCardUrl) { this.aadhaarCardUrl = aadhaarCardUrl; }
 
     public String getFeeStatus() { return feeStatus; }
     public void setFeeStatus(String feeStatus) { this.feeStatus = feeStatus; }
@@ -237,5 +246,8 @@ public class Student {
 
     public String getLanguagePreference() { return languagePreference; }
     public void setLanguagePreference(String languagePreference) { this.languagePreference = languagePreference; }
+
+    public String getDynamicData() { return dynamicData; }
+    public void setDynamicData(String dynamicData) { this.dynamicData = dynamicData; }
 
 }

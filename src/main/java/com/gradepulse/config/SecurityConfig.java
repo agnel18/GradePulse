@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 
 @Configuration
 @EnableWebSecurity
@@ -35,8 +36,16 @@ public class SecurityConfig {
             )
             .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
             .headers(headers -> headers
-                .frameOptions().sameOrigin()
-                .contentSecurityPolicy("frame-ancestors 'self'"));
+                .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
+                .contentSecurityPolicy(csp -> csp.policyDirectives(
+                    "default-src 'self'; " +
+                    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
+                    "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
+                    "font-src 'self' https://cdnjs.cloudflare.com; " +
+                    "img-src 'self' data: https:; " +
+                    "connect-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;"
+                ))
+            );
 
         return http.build();
     }

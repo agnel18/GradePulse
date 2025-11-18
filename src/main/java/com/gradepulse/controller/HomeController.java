@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,7 +24,13 @@ public class HomeController {
     }
 
     @GetMapping("/dashboard")
-    public String dashboard(Model model) {
+    public String dashboard(Model model, HttpServletResponse response) {
+        // Set proper response headers to prevent chunked encoding issues
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setHeader("Expires", "0");
+        response.setHeader("Content-Type", "text/html; charset=UTF-8");
+        
         DashboardStats stats = new DashboardStats();
         
         // Overall counts

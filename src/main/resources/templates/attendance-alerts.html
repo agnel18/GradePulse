@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Attendance Alerts - GradePulse</title>
+    <link th:href="@{/css/bootstrap.min.css(v=3)}" rel="stylesheet">
+    <link th:href="@{/css/all.min.css(v=3)}" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #f5f7fa;
+            --bg-secondary: #ffffff;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --border-color: rgba(0,0,0,0.08);
+            --shadow: 0 2px 12px rgba(0,0,0,0.08);
+            --shadow-hover: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #1a202c;
+            --bg-secondary: #2d3748;
+            --text-primary: #f7fafc;
+            --text-secondary: #a0aec0;
+            --border-color: rgba(255,255,255,0.1);
+            --shadow: 0 2px 12px rgba(0,0,0,0.3);
+            --shadow-hover: 0 8px 24px rgba(0,0,0,0.5);
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .navbar {
+            box-shadow: var(--shadow);
+        }
+        
+        .alert-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            background: var(--bg-secondary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .alert-card .card-header {
+            border: none;
+            border-radius: 12px 12px 0 0;
+            padding: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .student-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s;
+        }
+        
+        .student-item:hover {
+            background-color: var(--bg-primary);
+        }
+        
+        .student-item:last-child {
+            border-bottom: none;
+        }
+        
+        .attendance-badge {
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .theme-toggle {
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .theme-toggle:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        [data-theme="dark"] .text-muted {
+            color: var(--text-secondary) !important;
+        }
+        
+        [data-theme="dark"] .form-check-input {
+            background-color: var(--bg-secondary);
+            border-color: var(--border-color);
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="/">
+            <i class="fas fa-graduation-cap me-2"></i>GradePulse
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/dashboard">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/upload">
+                        <i class="fas fa-upload"></i> Upload
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="/attendance-alerts">
+                        <i class="fas fa-bell"></i> Attendance Alerts
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/fields">
+                        <i class="fas fa-sliders-h"></i> Fields
+                    </a>
+                </li>
+            </ul>
+            <span class="navbar-text text-white me-3 d-none d-lg-block">
+                <i class="fas fa-user-circle me-2"></i>Welcome, Admin
+            </span>
+            <span class="theme-toggle text-white me-3" onclick="toggleTheme()" title="Toggle Dark Mode">
+                <i class="fas fa-moon" id="themeIcon"></i>
+            </span>
+            <form th:action="@{/logout}" method="post" class="d-inline">
+                <button type="submit" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid px-4 py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 fw-bold text-primary">
+                <i class="fas fa-bell me-3"></i>Attendance Alerts
+            </h1>
+            <p class="text-muted">Send WhatsApp notifications to parents about student attendance</p>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    
+    <div th:if="${warning}" class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span th:text="${warning}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <form th:action="@{/attendance-alerts/send}" method="post" id="alertForm">
+        <div class="row">
+            <!-- Critical Attendance (Below 75%) -->
+            <div class="col-lg-6 mb-4">
+                <div class="alert-card">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Critical - Below 75% 
+                            <span class="badge bg-white text-danger" th:text="${lowCount}">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">Students requiring urgent attention</p>
+                        
+                        <div th:if="${lowCount > 0}">
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAll('low')">
+                                    <i class="fas fa-check-double"></i> Select All
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAll('low')">
+                                    <i class="fas fa-times"></i> Deselect All
+                                </button>
+                            </div>
+                            
+                            <div th:each="student : ${lowAttendanceStudents}" class="student-item">
+                                <div class="form-check">
+                                    <input class="form-check-input low-checkbox" type="checkbox" 
+                                           th:id="'student_' + ${student.id}" 
+                                           name="studentIds" 
+                                           th:value="${student.id}">
+                                    <label class="form-check-label w-100" th:for="'student_' + ${student.id}">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong th:text="${student.fullName}">Student Name</strong>
+                                                <br>
+                                                <small class="text-muted">
+                                                    Class: <span th:text="${student.admissionClass}">-</span> | 
+                                                    ID: <span th:text="${student.studentId}">-</span>
+                                                </small>
+                                            </div>
+                                            <span class="attendance-badge bg-danger text-white" 
+                                                  th:text="${#numbers.formatDecimal(student.attendancePercent, 1, 1)} + '%'">0%</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <button type="button" class="btn btn-danger w-100" 
+                                        onclick="submitForm('critical')">
+                                    <i class="fas fa-paper-plane me-2"></i>
+                                    Send Critical Alerts
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div th:if="${lowCount == 0}" class="text-center py-4 text-muted">
+                            <i class="fas fa-check-circle fa-3x mb-3"></i>
+                            <p>No students with critical attendance</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warning Attendance (75-85%) -->
+            <div class="col-lg-6 mb-4">
+                <div class="alert-card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exclamation me-2"></i>
+                            Warning - 75% to 85%
+                            <span class="badge bg-dark text-warning" th:text="${mediumCount}">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">Students needing attention</p>
+                        
+                        <div th:if="${mediumCount > 0}">
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAll('medium')">
+                                    <i class="fas fa-check-double"></i> Select All
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAll('medium')">
+                                    <i class="fas fa-times"></i> Deselect All
+                                </button>
+                            </div>
+                            
+                            <div th:each="student : ${mediumAttendanceStudents}" class="student-item">
+                                <div class="form-check">
+                                    <input class="form-check-input medium-checkbox" type="checkbox" 
+                                           th:id="'student_' + ${student.id}" 
+                                           name="studentIds" 
+                                           th:value="${student.id}">
+                                    <label class="form-check-label w-100" th:for="'student_' + ${student.id}">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong th:text="${student.fullName}">Student Name</strong>
+                                                <br>
+                                                <small class="text-muted">
+                                                    Class: <span th:text="${student.admissionClass}">-</span> | 
+                                                    ID: <span th:text="${student.studentId}">-</span>
+                                                </small>
+                                            </div>
+                                            <span class="attendance-badge bg-warning text-dark" 
+                                                  th:text="${#numbers.formatDecimal(student.attendancePercent, 1, 1)} + '%'">0%</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <button type="button" class="btn btn-warning w-100" 
+                                        onclick="submitForm('warning')">
+                                    <i class="fas fa-paper-plane me-2"></i>
+                                    Send Warning Alerts
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div th:if="${mediumCount == 0}" class="text-center py-4 text-muted">
+                            <i class="fas fa-check-circle fa-3x mb-3"></i>
+                            <p>No students with warning attendance</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <input type="hidden" name="alertType" id="alertType" value="">
+    </form>
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js(v=3)}"></script>
+<script th:src="@{/js/dashboard.js(v=3)}"></script>
+<script>
+    function selectAll(category) {
+        document.querySelectorAll('.' + category + '-checkbox').forEach(cb => cb.checked = true);
+    }
+    
+    function deselectAll(category) {
+        document.querySelectorAll('.' + category + '-checkbox').forEach(cb => cb.checked = false);
+    }
+    
+    function submitForm(alertType) {
+        const checkedCount = document.querySelectorAll('input[name="studentIds"]:checked').length;
+        if (checkedCount === 0) {
+            alert('Please select at least one student to send alerts');
+            return;
+        }
+        
+        const confirmed = confirm(`Send ${alertType} attendance alerts to ${checkedCount} student(s)?`);
+        if (confirmed) {
+            document.getElementById('alertType').value = alertType;
+            document.getElementById('alertForm').submit();
+        }
+    }
+</script>
+</body>
+</html>

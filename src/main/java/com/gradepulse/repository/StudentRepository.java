@@ -43,4 +43,10 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     
     long countByAttendancePercentGreaterThanEqual(Double percent);
     long countByAttendancePercentLessThan(Double percent);
+    
+    // Attendance alert queries
+    List<Student> findByAttendancePercentLessThan(Double percent);
+    
+    @Query("SELECT s FROM Student s WHERE s.attendancePercent >= :minPercent AND s.attendancePercent < :maxPercent")
+    List<Student> findByAttendancePercentBetween(Double minPercent, Double maxPercent);
 }

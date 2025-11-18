@@ -39,11 +39,11 @@ public class SecurityConfig {
                 .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
                 .contentSecurityPolicy(csp -> csp.policyDirectives(
                     "default-src 'self'; " +
-                    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
-                    "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
-                    "font-src 'self' https://cdnjs.cloudflare.com; " +
+                    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; " +
+                    "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; " +
+                    "font-src 'self' https://cdnjs.cloudflare.com https://unpkg.com; " +
                     "img-src 'self' data: https:; " +
-                    "connect-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;"
+                    "connect-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com;"
                 ))
             );
 

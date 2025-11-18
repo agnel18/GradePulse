@@ -401,17 +401,30 @@ public class UploadController {
             log.info("Successfully saved {} students", savedCount);
         }
 
-        // Send WhatsApp
-        String welcome = "Welcome to GradePulse! Reply with:\n1 → English\n2 → हिंदी\n3 → தமிழ்\n4 → ಕನ್ನಡ";
-        for (Student s : students) {
-            if (s.getFatherContact() != null && s.getFatherContact().matches("\\d{10}")) {
-                whatsAppService.send(s.getFatherContact(), welcome);
-                log.info("WhatsApp sent to father: {}", s.getFatherContact());
+        // Send WhatsApp (wrapped in try-catch to handle API limits)
+        try {
+            String welcome = "Welcome to GradePulse! Reply with:\n1 → English\n2 → हिंदी\n3 → தமிழ்\n4 → ಕನ್ನಡ";
+            int sentCount = 0;
+            for (Student s : students) {
+                if (sentCount >= 10) break; // Limit to 10 messages per upload to avoid API limits
+                
+                if (s.getFatherContact() != null && s.getFatherContact().matches("\\d{10}")) {
+                    whatsAppService.send(s.getFatherContact(), welcome);
+                    log.info("WhatsApp sent to father: {}", s.getFatherContact());
+                    sentCount++;
+                }
+                if (sentCount >= 10) break;
+                
+                if (s.getMotherContact() != null && s.getMotherContact().matches("\\d{10}")) {
+                    whatsAppService.send(s.getMotherContact(), welcome);
+                    log.info("WhatsApp sent to mother: {}", s.getMotherContact());
+                    sentCount++;
+                }
             }
-            if (s.getMotherContact() != null && s.getMotherContact().matches("\\d{10}")) {
-                whatsAppService.send(s.getMotherContact(), welcome);
-                log.info("WhatsApp sent to mother: {}", s.getMotherContact());
-            }
+            log.info("Successfully sent {} WhatsApp messages", sentCount);
+        } catch (Exception e) {
+            log.warn("WhatsApp sending failed (possibly due to API limits): {}", e.getMessage());
+            // Continue execution - don't fail the upload if WhatsApp fails
         }
 
         model.addAttribute("message", "SUCCESS! " + savedCount + " students saved.");

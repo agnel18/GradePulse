@@ -51,8 +51,11 @@ public class AttendanceAlertController {
 
         int sentCount = 0;
         int failedCount = 0;
+        int rateLimitErrors = 0;
         
         for (Long studentId : studentIds) {
+            if (studentId == null) continue;
+            
             try {
                 Student student = studentRepository.findById(studentId).orElse(null);
                 if (student == null) continue;
@@ -66,6 +69,9 @@ public class AttendanceAlertController {
                         sentCount++;
                         log.info("Sent alert to father: {}", student.getFatherContact());
                     } catch (Exception e) {
+                        if (e.getMessage() != null && e.getMessage().contains("exceeded")) {
+                            rateLimitErrors++;
+                        }
                         log.warn("Failed to send to father {}: {}", student.getFatherContact(), e.getMessage());
                         failedCount++;
                     }
@@ -78,6 +84,9 @@ public class AttendanceAlertController {
                         sentCount++;
                         log.info("Sent alert to mother: {}", student.getMotherContact());
                     } catch (Exception e) {
+                        if (e.getMessage() != null && e.getMessage().contains("exceeded")) {
+                            rateLimitErrors++;
+                        }
                         log.warn("Failed to send to mother {}: {}", student.getMotherContact(), e.getMessage());
                         failedCount++;
                     }
@@ -90,14 +99,17 @@ public class AttendanceAlertController {
                         sentCount++;
                         log.info("Sent alert to guardian: {}", student.getGuardianContact());
                     } catch (Exception e) {
+                        if (e.getMessage() != null && e.getMessage().contains("exceeded")) {
+                            rateLimitErrors++;
+                        }
                         log.warn("Failed to send to guardian {}: {}", student.getGuardianContact(), e.getMessage());
                         failedCount++;
                     }
                 }
                 
-                // Limit to 10 messages per request to avoid API limits
-                if (sentCount >= 10) {
-                    log.warn("Reached message limit of 10, stopping...");
+                // Stop if hit rate limit
+                if (rateLimitErrors > 0) {
+                    log.warn("Hit Twilio rate limit, stopping to avoid further errors");
                     break;
                 }
                 
@@ -113,8 +125,10 @@ public class AttendanceAlertController {
         }
         
         if (failedCount > 0) {
-            redirectAttributes.addFlashAttribute("warning", 
-                String.format("%d messages failed to send (API limits or invalid numbers)", failedCount));
+            String errorMsg = rateLimitErrors > 0 
+                ? String.format("%d messages failed - Twilio daily limit (50) exceeded. Try again tomorrow.", failedCount)
+                : String.format("%d messages failed to send (invalid numbers or network issues)", failedCount);
+            redirectAttributes.addFlashAttribute("warning", errorMsg);
         }
         
         return "redirect:/attendance-alerts";

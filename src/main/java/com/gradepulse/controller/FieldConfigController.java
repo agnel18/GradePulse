@@ -10,7 +10,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,6 +61,9 @@ public class FieldConfigController {
         log.info("Updating field ID: {}", id);
         
         return fieldConfigRepository.findById(id).map(field -> {
+            if (field == null) {
+                return ResponseEntity.notFound().<Map<String, Object>>build();
+            }
             field.setDisplayName(updatedField.getDisplayName());
             field.setFieldType(updatedField.getFieldType());
             field.setRequired(updatedField.getRequired());
@@ -97,6 +99,9 @@ public class FieldConfigController {
         }
         
         return fieldConfigRepository.findById(id).map(field -> {
+            if (field == null) {
+                return ResponseEntity.notFound().<Map<String, Object>>build();
+            }
             fieldConfigRepository.delete(field);
             log.info("Field deleted: {}", field.getFieldName());
             

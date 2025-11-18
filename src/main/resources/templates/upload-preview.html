@@ -227,7 +227,7 @@
                         <div th:if="${s.changedFields['fatherName']}" class="old-value">Old: <span th:text="${s.oldValues['fatherName']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['fatherContact']} ? 'changed-field' : ''">
-                        <input th:name="|students[${iter.index}].fatherContact|" th:value="${s.fatherContact}" th:classappend="${s.changedFields['fatherContact']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="[6-9][0-9]{9}" title="Mobile number must be 10 digits starting with 6-9" maxlength="10"/>
+                        <input th:name="|students[${iter.index}].fatherContact|" th:value="${s.fatherContact}" th:classappend="${s.changedFields['fatherContact']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="^\+\d{10,15}$" title="International format: +971508714823 or +919876543210" maxlength="16"/>
                         <div th:if="${s.changedFields['fatherContact'] != null and s.changedFields['fatherContact'] and s.oldValues['fatherContact'] != null and !#strings.isEmpty(s.oldValues['fatherContact'])}" class="old-value">Old: <span th:text="${s.oldValues['fatherContact']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['fatherAadhaar']} ? 'changed-field' : ''">
@@ -239,7 +239,7 @@
                         <div th:if="${s.changedFields['motherName']}" class="old-value">Old: <span th:text="${s.oldValues['motherName']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['motherContact']} ? 'changed-field' : ''">
-                        <input th:name="|students[${iter.index}].motherContact|" th:value="${s.motherContact}" th:classappend="${s.changedFields['motherContact']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="[6-9][0-9]{9}" title="Mobile number must be 10 digits starting with 6-9" maxlength="10"/>
+                        <input th:name="|students[${iter.index}].motherContact|" th:value="${s.motherContact}" th:classappend="${s.changedFields['motherContact']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="^\+\d{10,15}$" title="International format: +971508714823 or +919876543210" maxlength="16"/>
                         <div th:if="${s.changedFields['motherContact'] != null and s.changedFields['motherContact'] and s.oldValues['motherContact'] != null and !#strings.isEmpty(s.oldValues['motherContact'])}" class="old-value">Old: <span th:text="${s.oldValues['motherContact']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['motherAadhaar']} ? 'changed-field' : ''">
@@ -251,7 +251,7 @@
                         <div th:if="${s.changedFields['guardianName'] != null and s.changedFields['guardianName'] and s.oldValues['guardianName'] != null and !#strings.isEmpty(s.oldValues['guardianName'])}" class="old-value">Old: <span th:text="${s.oldValues['guardianName']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['guardianContact']} ? 'changed-field' : ''">
-                        <input th:name="|students[${iter.index}].guardianContact|" th:value="${s.guardianContact}" th:classappend="${s.changedFields['guardianContact']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="[6-9][0-9]{9}" title="Mobile number must be 10 digits starting with 6-9" maxlength="10"/>
+                        <input th:name="|students[${iter.index}].guardianContact|" th:value="${s.guardianContact}" th:classappend="${s.changedFields['guardianContact']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="^\+\d{10,15}$" title="International format: +971508714823 or +919876543210" maxlength="16"/>
                         <div th:if="${s.changedFields['guardianContact'] != null and s.changedFields['guardianContact'] and s.oldValues['guardianContact'] != null and !#strings.isEmpty(s.oldValues['guardianContact'])}" class="old-value">Old: <span th:text="${s.oldValues['guardianContact']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['guardianRelation']} ? 'changed-field' : ''">

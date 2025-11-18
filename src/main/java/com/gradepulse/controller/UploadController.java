@@ -521,16 +521,39 @@ public class UploadController {
             dto.setValid(false);
             dto.getErrors().add("At least one contact (Father/Mother/Guardian) is required");
         }
-        if (dto.getFatherContact() != null && !dto.getFatherContact().matches("\\d{10}")) {
-            dto.setValid(false);
-            dto.getErrors().add("Father Contact must be 10 digits");
-        }
-        if (dto.getMotherContact() != null && !dto.getMotherContact().matches("\\d{10}")) {
-            dto.setValid(false);
-            dto.getErrors().add("Mother Contact must be 10 digits");
-        }
+        
+        // Validate phone numbers for WhatsApp format
+        validatePhoneNumber(dto, dto.getFatherContact(), "Father Contact");
+        validatePhoneNumber(dto, dto.getMotherContact(), "Mother Contact");
+        validatePhoneNumber(dto, dto.getGuardianContact(), "Guardian Contact");
 
         log.info("Validation result: Valid={}, Errors={}", dto.isValid(), dto.getErrors());
+    }
+    
+    private void validatePhoneNumber(StudentUploadDto dto, String phoneNumber, String fieldName) {
+        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+            return; // Optional field
+        }
+        
+        String phone = phoneNumber.trim();
+        
+        // Check for correct format: +[country code][number] (e.g., +971508714823, +919876543210)
+        if (!phone.matches("^\\+\\d{10,15}$")) {
+            dto.setValid(false);
+            
+            // Provide specific error messages based on common mistakes
+            if (phone.contains("-") || phone.contains(" ")) {
+                dto.getErrors().add(fieldName + " should not contain dashes or spaces. Use format: +971508714823");
+            } else if (phone.startsWith("00")) {
+                dto.getErrors().add(fieldName + " should start with + not 00. Example: +971508714823 (not 00971...)");
+            } else if (!phone.startsWith("+")) {
+                dto.getErrors().add(fieldName + " must start with country code. Example: +971508714823 or +919876543210");
+            } else if (phone.length() < 11 || phone.length() > 16) {
+                dto.getErrors().add(fieldName + " has invalid length. Format: +[country code][number] (e.g., +971508714823)");
+            } else {
+                dto.getErrors().add(fieldName + " has invalid format. Use: +971508714823 (no spaces/dashes)");
+            }
+        }
     }
     
     private void setDtoField(StudentUploadDto dto, String field, String value) {

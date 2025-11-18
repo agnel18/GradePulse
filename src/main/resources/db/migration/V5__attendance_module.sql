@@ -10,7 +10,7 @@ CREATE TABLE class_sections (
     section_name VARCHAR(20) NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY unique_class_section (academic_year, board, stream, class_name, section_name)
+    CONSTRAINT unique_class_section UNIQUE (academic_year, board, stream, class_name, section_name)
 );
 
 -- Attendance Records
@@ -27,7 +27,7 @@ CREATE TABLE attendance_records (
     notes TEXT,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
     FOREIGN KEY (class_section_id) REFERENCES class_sections(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_attendance (student_id, attendance_date)
+    CONSTRAINT unique_attendance UNIQUE (student_id, attendance_date)
 );
 
 -- Indexes for performance

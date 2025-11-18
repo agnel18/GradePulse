@@ -22,7 +22,10 @@ public class UploadSessionService {
         if (path == null) {
             throw new IOException("Failed to create file path");
         }
-        file.transferTo(path.toFile());
+        // Use Files.copy instead of transferTo to avoid null safety warning
+        try (InputStream inputStream = file.getInputStream()) {
+            Files.copy(inputStream, path, StandardCopyOption.REPLACE_EXISTING);
+        }
         sessions.put(sessionId, path);
         return sessionId;
     }

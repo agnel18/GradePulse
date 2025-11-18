@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Attendance - GradePulse</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css(v=3)}">
+    <link rel="stylesheet" th:href="@{/css/all.min.css(v=3)}">
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --shadow: rgba(0,0,0,0.1);
+        }
+        [data-theme="dark"] {
+            --bg-primary: #1a1d23;
+            --bg-secondary: #2d3139;
+            --text-primary: #e9ecef;
+            --text-secondary: #adb5bd;
+            --border-color: #495057;
+            --shadow: rgba(0,0,0,0.3);
+        }
+        body {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        .card {
+            background-color: var(--bg-primary);
+            border-color: var(--border-color);
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+        .form-label {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        .form-select, .form-control {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+        .form-select:focus, .form-control:focus {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            border-color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-graduation-cap me-2"></i>GradePulse
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-link nav-link" onclick="toggleTheme()">
+                            <i class="fas fa-moon" id="theme-icon"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-calendar-check me-2"></i>Mark Attendance
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Flash Messages -->
+                        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <span th:text="${error}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <div th:if="${warning}" class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <span th:text="${warning}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <form th:action="@{/attendance/mark}" method="post" th:object="${request}">
+                            <div class="mb-3">
+                                <label for="academicYear" class="form-label">
+                                    <i class="fas fa-calendar me-2"></i>Academic Year *
+                                </label>
+                                <select class="form-select" id="academicYear" th:field="*{academicYear}" required>
+                                    <option value="">-- Select Academic Year --</option>
+                                    <option th:each="year : ${academicYears}" 
+                                            th:value="${year}" 
+                                            th:text="${year}"></option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="board" class="form-label">
+                                    <i class="fas fa-school me-2"></i>Board *
+                                </label>
+                                <select class="form-select" id="board" th:field="*{board}" required disabled>
+                                    <option value="">-- Select Board --</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="stream" class="form-label">
+                                    <i class="fas fa-stream me-2"></i>Stream *
+                                </label>
+                                <select class="form-select" id="stream" th:field="*{stream}" required disabled>
+                                    <option value="">-- Select Stream --</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="className" class="form-label">
+                                    <i class="fas fa-chalkboard me-2"></i>Class *
+                                </label>
+                                <select class="form-select" id="className" th:field="*{className}" required disabled>
+                                    <option value="">-- Select Class --</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="sectionName" class="form-label">
+                                    <i class="fas fa-users me-2"></i>Section *
+                                </label>
+                                <select class="form-select" id="sectionName" th:field="*{sectionName}" required disabled>
+                                    <option value="">-- Select Section --</option>
+                                </select>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-arrow-right me-2"></i>Show Students
+                                </button>
+                                <a href="/dashboard" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/bootstrap.bundle.min.js(v=3)}"></script>
+    <script th:src="@{/js/dashboard.js(v=3)}"></script>
+    <script>
+        // Cascading dropdowns
+        document.getElementById('academicYear').addEventListener('change', function() {
+            const year = this.value;
+            if (!year) return;
+
+            fetch(`/attendance/api/boards?academicYear=${year}`)
+                .then(res => res.json())
+                .then(boards => {
+                    const boardSelect = document.getElementById('board');
+                    boardSelect.innerHTML = '<option value="">-- Select Board --</option>';
+                    boards.forEach(board => {
+                        boardSelect.innerHTML += `<option value="${board}">${board}</option>`;
+                    });
+                    boardSelect.disabled = false;
+                    document.getElementById('stream').disabled = true;
+                    document.getElementById('className').disabled = true;
+                    document.getElementById('sectionName').disabled = true;
+                });
+        });
+
+        document.getElementById('board').addEventListener('change', function() {
+            const year = document.getElementById('academicYear').value;
+            const board = this.value;
+            if (!board) return;
+
+            fetch(`/attendance/api/streams?academicYear=${year}&board=${board}`)
+                .then(res => res.json())
+                .then(streams => {
+                    const streamSelect = document.getElementById('stream');
+                    streamSelect.innerHTML = '<option value="">-- Select Stream --</option>';
+                    streams.forEach(stream => {
+                        streamSelect.innerHTML += `<option value="${stream}">${stream}</option>`;
+                    });
+                    streamSelect.disabled = false;
+                    document.getElementById('className').disabled = true;
+                    document.getElementById('sectionName').disabled = true;
+                });
+        });
+
+        document.getElementById('stream').addEventListener('change', function() {
+            const year = document.getElementById('academicYear').value;
+            const board = document.getElementById('board').value;
+            const stream = this.value;
+            if (!stream) return;
+
+            fetch(`/attendance/api/classes?academicYear=${year}&board=${board}&stream=${stream}`)
+                .then(res => res.json())
+                .then(classes => {
+                    const classSelect = document.getElementById('className');
+                    classSelect.innerHTML = '<option value="">-- Select Class --</option>';
+                    classes.forEach(cls => {
+                        classSelect.innerHTML += `<option value="${cls}">${cls}</option>`;
+                    });
+                    classSelect.disabled = false;
+                    document.getElementById('sectionName').disabled = true;
+                });
+        });
+
+        document.getElementById('className').addEventListener('change', function() {
+            const year = document.getElementById('academicYear').value;
+            const board = document.getElementById('board').value;
+            const stream = document.getElementById('stream').value;
+            const className = this.value;
+            if (!className) return;
+
+            fetch(`/attendance/api/sections?academicYear=${year}&board=${board}&stream=${stream}&className=${className}`)
+                .then(res => res.json())
+                .then(sections => {
+                    const sectionSelect = document.getElementById('sectionName');
+                    sectionSelect.innerHTML = '<option value="">-- Select Section --</option>';
+                    sections.forEach(section => {
+                        sectionSelect.innerHTML += `<option value="${section.sectionName}">${section.sectionName}</option>`;
+                    });
+                    sectionSelect.disabled = false;
+                });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Submitted - GradePulse</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css(v=3)}">
+    <link rel="stylesheet" th:href="@{/css/all.min.css(v=3)}">
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --shadow: rgba(0,0,0,0.1);
+        }
+        [data-theme="dark"] {
+            --bg-primary: #1a1d23;
+            --bg-secondary: #2d3139;
+            --text-primary: #e9ecef;
+            --text-secondary: #adb5bd;
+            --border-color: #495057;
+            --shadow: rgba(0,0,0,0.3);
+        }
+        body {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .success-container {
+            text-align: center;
+            max-width: 600px;
+        }
+        .success-icon {
+            font-size: 5rem;
+            color: #28a745;
+            animation: scaleIn 0.5s ease-out;
+        }
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .card {
+            background-color: var(--bg-primary);
+            border-color: var(--border-color);
+            box-shadow: 0 4px 8px var(--shadow);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px 0;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        
+        <h1 class="mt-4 mb-3">Attendance Submitted Successfully!</h1>
+        
+        <div th:if="${success}" class="alert alert-success mb-4">
+            <span th:text="${success}"></span>
+        </div>
+        
+        <div th:if="${warning}" class="alert alert-warning mb-4">
+            <span th:text="${warning}"></span>
+        </div>
+
+        <div th:if="${result}" class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Summary</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                            <div class="stat-number" th:text="${result.successCount}">0</div>
+                            <div>Students Marked</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">
+                            <div class="stat-number" th:text="${result.whatsappSent}">0</div>
+                            <div>WhatsApp Sent</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div th:if="${result.failedCount > 0}" class="alert alert-danger mt-3">
+                    <strong>Failed:</strong> <span th:text="${result.failedCount}"></span> students
+                    <div th:if="${result.errors}" class="mt-2">
+                        <small>
+                            <ul class="mb-0">
+                                <li th:each="error : ${result.errors}" th:text="${error}"></li>
+                            </ul>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2">
+            <a href="/attendance/mark" class="btn btn-primary btn-lg">
+                <i class="fas fa-calendar-check me-2"></i>Mark Another Attendance
+            </a>
+            <a href="/dashboard" class="btn btn-outline-secondary">
+                <i class="fas fa-home me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script th:src="@{/js/bootstrap.bundle.min.js(v=3)}"></script>
+</body>
+</html>

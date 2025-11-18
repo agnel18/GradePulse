@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Attendance - GradePulse</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css(v=3)}">
+    <link rel="stylesheet" th:href="@{/css/all.min.css(v=3)}">
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --shadow: rgba(0,0,0,0.1);
+        }
+        [data-theme="dark"] {
+            --bg-primary: #1a1d23;
+            --bg-secondary: #2d3139;
+            --text-primary: #e9ecef;
+            --text-secondary: #adb5bd;
+            --border-color: #495057;
+            --shadow: rgba(0,0,0,0.3);
+        }
+        body {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        .card {
+            background-color: var(--bg-primary);
+            border-color: var(--border-color);
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+        .student-card {
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+        }
+        .student-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow);
+        }
+        .status-present { border-left-color: #28a745; background-color: rgba(40, 167, 69, 0.05); }
+        .status-absent { border-left-color: #dc3545; background-color: rgba(220, 53, 69, 0.05); }
+        .status-late { border-left-color: #ffc107; background-color: rgba(255, 193, 7, 0.05); }
+        .status-half { border-left-color: #17a2b8; background-color: rgba(23, 162, 184, 0.05); }
+        .last-status {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .absence-warning {
+            background-color: #dc3545;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .btn-status {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: var(--bg-primary);
+            padding: 15px;
+            border-bottom: 2px solid var(--border-color);
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-graduation-cap me-2"></i>GradePulse
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/attendance/mark">
+                            <i class="fas fa-arrow-left me-1"></i>Back
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-link nav-link" onclick="toggleTheme()">
+                            <i class="fas fa-moon" id="theme-icon"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <form th:action="@{/attendance/submit}" method="post" id="attendanceForm">
+        <input type="hidden" name="classSectionId" th:value="${classSection.id}">
+        <input type="hidden" name="attendanceDate" th:value="${attendanceDate}">
+        
+        <div class="sticky-header">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h5 class="mb-0">
+                            <i class="fas fa-users me-2"></i>
+                            <span th:text="${classSection.fullName}"></span>
+                        </h5>
+                        <small class="text-muted">
+                            Date: <span th:text="${#temporals.format(attendanceDate, 'dd MMM yyyy')}"></span>
+                            | Students: <span th:text="${students.size()}"></span>
+                        </small>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <div class="btn-group me-2" role="group">
+                            <button type="button" class="btn btn-sm btn-success" onclick="markAll('PRESENT')">
+                                <i class="fas fa-check-circle me-1"></i>All Present
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="markAll('ABSENT')">
+                                <i class="fas fa-times-circle me-1"></i>All Absent
+                            </button>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Submit Attendance
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid mt-4 mb-5">
+            <div class="row">
+                <div th:each="studentDto, iterStat : ${students}" class="col-md-6 col-lg-4 mb-3">
+                    <div class="card student-card" th:id="'card-' + ${studentDto.student.id}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="card-title mb-1" th:text="${studentDto.student.fullName}"></h6>
+                                    <small class="text-muted">
+                                        ID: <span th:text="${studentDto.student.studentId}"></span>
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span th:if="${studentDto.consecutiveAbsences > 2}" 
+                                          class="absence-warning"
+                                          th:text="'⚠ ' + ${studentDto.consecutiveAbsences} + ' days'">
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div th:if="${studentDto.lastAttendanceStatus}" class="mb-2">
+                                <small class="text-muted">
+                                    Last: <span th:text="${studentDto.lastAttendanceDate}"></span> - 
+                                    <span class="last-status badge bg-secondary" 
+                                          th:text="${studentDto.lastAttendanceStatus}">
+                                    </span>
+                                </small>
+                            </div>
+
+                            <div class="btn-group-vertical w-100" role="group">
+                                <input type="radio" class="btn-check" 
+                                       th:name="'status_' + ${studentDto.student.id}"
+                                       th:id="'present_' + ${studentDto.student.id}"
+                                       value="PRESENT" 
+                                       autocomplete="off">
+                                <label class="btn btn-outline-success btn-status" 
+                                       th:for="'present_' + ${studentDto.student.id}"
+                                       th:onclick="'updateCard(' + ${studentDto.student.id} + ', \'PRESENT\')'">
+                                    <i class="fas fa-check me-1"></i>Present
+                                </label>
+
+                                <input type="radio" class="btn-check" 
+                                       th:name="'status_' + ${studentDto.student.id}"
+                                       th:id="'absent_' + ${studentDto.student.id}"
+                                       value="ABSENT" 
+                                       autocomplete="off">
+                                <label class="btn btn-outline-danger btn-status" 
+                                       th:for="'absent_' + ${studentDto.student.id}"
+                                       th:onclick="'updateCard(' + ${studentDto.student.id} + ', \'ABSENT\')'">
+                                    <i class="fas fa-times me-1"></i>Absent
+                                </label>
+
+                                <input type="radio" class="btn-check" 
+                                       th:name="'status_' + ${studentDto.student.id}"
+                                       th:id="'late_' + ${studentDto.student.id}"
+                                       value="LATE" 
+                                       autocomplete="off">
+                                <label class="btn btn-outline-warning btn-status" 
+                                       th:for="'late_' + ${studentDto.student.id}"
+                                       th:onclick="'updateCard(' + ${studentDto.student.id} + ', \'LATE\')'">
+                                    <i class="fas fa-clock me-1"></i>Late
+                                </label>
+
+                                <input type="radio" class="btn-check" 
+                                       th:name="'status_' + ${studentDto.student.id}"
+                                       th:id="'half_' + ${studentDto.student.id}"
+                                       value="HALF_DAY" 
+                                       autocomplete="off">
+                                <label class="btn btn-outline-info btn-status" 
+                                       th:for="'half_' + ${studentDto.student.id}"
+                                       th:onclick="'updateCard(' + ${studentDto.student.id} + ', \'HALF_DAY\')'">
+                                    <i class="fas fa-adjust me-1"></i>Half Day
+                                </label>
+                            </div>
+
+                            <div class="mt-2" style="display: none;" th:id="'time-' + ${studentDto.student.id}">
+                                <input type="time" class="form-control form-control-sm" 
+                                       th:name="'arrivalTime_' + ${studentDto.student.id}"
+                                       placeholder="Arrival Time">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <script th:src="@{/js/bootstrap.bundle.min.js(v=3)}"></script>
+    <script th:src="@{/js/dashboard.js(v=3)}"></script>
+    <script>
+        function updateCard(studentId, status) {
+            const card = document.getElementById('card-' + studentId);
+            const timeInput = document.getElementById('time-' + studentId);
+            
+            // Remove all status classes
+            card.classList.remove('status-present', 'status-absent', 'status-late', 'status-half');
+            
+            // Add appropriate class
+            if (status === 'PRESENT') {
+                card.classList.add('status-present');
+            } else if (status === 'ABSENT') {
+                card.classList.add('status-absent');
+            } else if (status === 'LATE') {
+                card.classList.add('status-late');
+                timeInput.style.display = 'block';
+            } else if (status === 'HALF_DAY') {
+                card.classList.add('status-half');
+            }
+            
+            // Hide time input for non-late status
+            if (status !== 'LATE') {
+                timeInput.style.display = 'none';
+            }
+        }
+
+        function markAll(status) {
+            const radios = document.querySelectorAll('input[type="radio"][value="' + status + '"]');
+            radios.forEach(radio => {
+                radio.checked = true;
+                const studentId = radio.name.replace('status_', '');
+                updateCard(studentId, status);
+            });
+        }
+
+        document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+            const checkedCount = document.querySelectorAll('input[type="radio"]:checked').length;
+            const totalStudents = /*[[${students.size()}]]*/ 0;
+            
+            if (checkedCount === 0) {
+                e.preventDefault();
+                alert('Please mark attendance for at least one student');
+                return false;
+            }
+            
+            if (checkedCount < totalStudents) {
+                if (!confirm(`You've marked ${checkedCount} out of ${totalStudents} students. Continue?`)) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+            
+            return true;
+        });
+    </script>
+</body>
+</html>

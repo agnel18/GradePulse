@@ -185,10 +185,12 @@
                     <p class="mb-2">Contact numbers must be in international format for WhatsApp notifications:</p>
                     <ul class="mb-2 small">
                         <li><strong>✅ Correct:</strong> +971508714823 (UAE), +919876543210 (India), +14155551234 (USA)</li>
-                        <li><strong>❌ Wrong:</strong> +971-50-871-4823, 00971508714823, 0508714823</li>
+                        <li><strong>⚠️ Excel strips the + sign:</strong> If you type +971508714823, Excel shows 9.71509E+11</li>
+                        <li><strong>💡 Solution:</strong> Format cells as TEXT first, or just enter 971508714823 (we'll add the +)</li>
                     </ul>
                     <p class="mb-0 small">
-                        <strong>Format:</strong> +[country code][phone number] <em>(no spaces, dashes, or leading zeros)</em>
+                        <strong>Auto-fix:</strong> We automatically clean up spaces, dashes, and add missing + prefix!<br>
+                        <em>Examples: "971508714823" → "+971508714823", "00971-50-871-4823" → "+971508714823"</em>
                     </p>
                 </div>
             </div>

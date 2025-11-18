@@ -102,15 +102,15 @@ public class UploadController {
             dto.setAttendancePercent(getDouble(row, 22));
             dto.setUdiseUploaded(getBoolean(row, 23));
 
-            // Family
+            // Family - normalize phone numbers
             dto.setFatherName(getString(row, 24));
-            dto.setFatherContact(getString(row, 25));
+            dto.setFatherContact(normalizePhoneNumber(getString(row, 25)));
             dto.setFatherAadhaar(getString(row, 26));
             dto.setMotherName(getString(row, 27));
-            dto.setMotherContact(getString(row, 28));
+            dto.setMotherContact(normalizePhoneNumber(getString(row, 28)));
             dto.setMotherAadhaar(getString(row, 29));
             dto.setGuardianName(getString(row, 30));
-            dto.setGuardianContact(getString(row, 31));
+            dto.setGuardianContact(normalizePhoneNumber(getString(row, 31)));
             dto.setGuardianRelation(getString(row, 32));
             dto.setGuardianAadhaar(getString(row, 33));
             dto.setFamilyStatus(getString(row, 34));
@@ -554,6 +554,43 @@ public class UploadController {
                 dto.getErrors().add(fieldName + " has invalid format. Use: +971508714823 (no spaces/dashes)");
             }
         }
+    }
+    
+    /**
+     * Normalizes phone numbers by removing unwanted characters and adding + prefix if missing.
+     * Handles Excel's tendency to strip the + sign from numbers.
+     * Examples:
+     * - "971508714823" -> "+971508714823"
+     * - "+971508714823" -> "+971508714823"
+     * - "00971508714823" -> "+971508714823"
+     * - "+971-50-871-4823" -> "+971508714823"
+     */
+    private String normalizePhoneNumber(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+            return phoneNumber;
+        }
+        
+        String phone = phoneNumber.trim();
+        
+        // Remove all spaces, dashes, parentheses
+        phone = phone.replaceAll("[\\s\\-()]+", "");
+        
+        // Handle 00 prefix (convert to +)
+        if (phone.startsWith("00")) {
+            phone = "+" + phone.substring(2);
+        }
+        
+        // If it's just digits and looks like an international number (10-15 digits), add +
+        if (phone.matches("^\\d{10,15}$") && !phone.startsWith("0")) {
+            phone = "+" + phone;
+        }
+        
+        // If it already has +, ensure no duplicate
+        if (phone.startsWith("+") && phone.length() > 1) {
+            return phone;
+        }
+        
+        return phone;
     }
     
     private void setDtoField(StudentUploadDto dto, String field, String value) {

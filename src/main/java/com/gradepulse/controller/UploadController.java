@@ -302,9 +302,10 @@ public class UploadController {
     }
 
     private boolean equalsObj(Object a, Object b) {
-        if (a == null && b == null) return true;
-        if (a == null || b == null) return false;
-        return a.equals(b);
+        // Treat null and empty strings as equal
+        String strA = (a == null) ? "" : a.toString().trim();
+        String strB = (b == null) ? "" : b.toString().trim();
+        return strA.equals(strB);
     }
 
     // === 3. Confirm & Save ===

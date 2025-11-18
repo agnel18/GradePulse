@@ -61,16 +61,21 @@
                         </div>
                     </td>
                     <td th:class="${s.changedFields['gender']} ? 'changed-field' : ''">
-                        <input th:name="|students[${iter.index}].gender|" th:value="${s.gender}" th:classappend="${s.changedFields['gender']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
-                        <div th:if="${s.changedFields['gender']}" class="old-value">Old: <span th:text="${s.oldValues['gender']}"></span></div>
+                        <select th:name="|students[${iter.index}].gender|" th:classappend="${s.changedFields['gender']} ? ' changed-field' : ''" class="form-control form-control-sm">
+                            <option value="">Select</option>
+                            <option th:value="'Male'" th:selected="${s.gender == 'Male'}">Male</option>
+                            <option th:value="'Female'" th:selected="${s.gender == 'Female'}">Female</option>
+                            <option th:value="'Other'" th:selected="${s.gender == 'Other'}">Other</option>
+                        </select>
+                        <div th:if="${s.changedFields['gender'] and s.oldValues['gender'] != null and !#strings.isEmpty(s.oldValues['gender'])}" class="old-value">Old: <span th:text="${s.oldValues['gender']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['apaarId']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].apaarId|" th:value="${s.apaarId}" th:classappend="${s.changedFields['apaarId']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['apaarId']}" class="old-value">Old: <span th:text="${s.oldValues['apaarId']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['aadhaarNumber']} ? 'changed-field' : ''">
-                        <input th:name="|students[${iter.index}].aadhaarNumber|" th:value="${s.aadhaarNumber}" th:classappend="${s.changedFields['aadhaarNumber']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
-                        <div th:if="${s.changedFields['aadhaarNumber']}" class="old-value">Old: <span th:text="${s.oldValues['aadhaarNumber']}"></span></div>
+                        <input th:name="|students[${iter.index}].aadhaarNumber|" th:value="${s.aadhaarNumber}" th:classappend="${s.changedFields['aadhaarNumber']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="[0-9]{12}" title="Aadhaar must be exactly 12 digits" maxlength="12"/>
+                        <div th:if="${s.changedFields['aadhaarNumber'] and s.oldValues['aadhaarNumber'] != null and !#strings.isEmpty(s.oldValues['aadhaarNumber'])}" class="old-value">Old: <span th:text="${s.oldValues['aadhaarNumber']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['category']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].category|" th:value="${s.category}" th:classappend="${s.changedFields['category']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
@@ -149,40 +154,40 @@
                         <div th:if="${s.changedFields['fatherName']}" class="old-value">Old: <span th:text="${s.oldValues['fatherName']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['fatherContact']} ? 'changed-field' : ''">
-                        <input th:name="|students[${iter.index}].fatherContact|" th:value="${s.fatherContact}" th:classappend="${s.changedFields['fatherContact']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
-                        <div th:if="${s.changedFields['fatherContact']}" class="old-value">Old: <span th:text="${s.oldValues['fatherContact']}"></span></div>
+                        <input th:name="|students[${iter.index}].fatherContact|" th:value="${s.fatherContact}" th:classappend="${s.changedFields['fatherContact']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="[6-9][0-9]{9}" title="Mobile number must be 10 digits starting with 6-9" maxlength="10"/>
+                        <div th:if="${s.changedFields['fatherContact'] and s.oldValues['fatherContact'] != null and !#strings.isEmpty(s.oldValues['fatherContact'])}" class="old-value">Old: <span th:text="${s.oldValues['fatherContact']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['fatherAadhaar']} ? 'changed-field' : ''">
-                        <input th:name="|students[${iter.index}].fatherAadhaar|" th:value="${s.fatherAadhaar}" th:classappend="${s.changedFields['fatherAadhaar']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
-                        <div th:if="${s.changedFields['fatherAadhaar']}" class="old-value">Old: <span th:text="${s.oldValues['fatherAadhaar']}"></span></div>
+                        <input th:name="|students[${iter.index}].fatherAadhaar|" th:value="${s.fatherAadhaar}" th:classappend="${s.changedFields['fatherAadhaar']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="[0-9]{12}" title="Aadhaar must be exactly 12 digits" maxlength="12"/>
+                        <div th:if="${s.changedFields['fatherAadhaar'] and s.oldValues['fatherAadhaar'] != null and !#strings.isEmpty(s.oldValues['fatherAadhaar'])}" class="old-value">Old: <span th:text="${s.oldValues['fatherAadhaar']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['motherName']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].motherName|" th:value="${s.motherName}" th:classappend="${s.changedFields['motherName']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['motherName']}" class="old-value">Old: <span th:text="${s.oldValues['motherName']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['motherContact']} ? 'changed-field' : ''">
-                        <input th:name="|students[${iter.index}].motherContact|" th:value="${s.motherContact}" th:classappend="${s.changedFields['motherContact']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
-                        <div th:if="${s.changedFields['motherContact']}" class="old-value">Old: <span th:text="${s.oldValues['motherContact']}"></span></div>
+                        <input th:name="|students[${iter.index}].motherContact|" th:value="${s.motherContact}" th:classappend="${s.changedFields['motherContact']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="[6-9][0-9]{9}" title="Mobile number must be 10 digits starting with 6-9" maxlength="10"/>
+                        <div th:if="${s.changedFields['motherContact'] and s.oldValues['motherContact'] != null and !#strings.isEmpty(s.oldValues['motherContact'])}" class="old-value">Old: <span th:text="${s.oldValues['motherContact']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['motherAadhaar']} ? 'changed-field' : ''">
-                        <input th:name="|students[${iter.index}].motherAadhaar|" th:value="${s.motherAadhaar}" th:classappend="${s.changedFields['motherAadhaar']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
-                        <div th:if="${s.changedFields['motherAadhaar']}" class="old-value">Old: <span th:text="${s.oldValues['motherAadhaar']}"></span></div>
+                        <input th:name="|students[${iter.index}].motherAadhaar|" th:value="${s.motherAadhaar}" th:classappend="${s.changedFields['motherAadhaar']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="[0-9]{12}" title="Aadhaar must be exactly 12 digits" maxlength="12"/>
+                        <div th:if="${s.changedFields['motherAadhaar'] and s.oldValues['motherAadhaar'] != null and !#strings.isEmpty(s.oldValues['motherAadhaar'])}" class="old-value">Old: <span th:text="${s.oldValues['motherAadhaar']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['guardianName']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].guardianName|" th:value="${s.guardianName}" th:classappend="${s.changedFields['guardianName']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
-                        <div th:if="${s.changedFields['guardianName']}" class="old-value">Old: <span th:text="${s.oldValues['guardianName']}"></span></div>
+                        <div th:if="${s.changedFields['guardianName'] and s.oldValues['guardianName'] != null and !#strings.isEmpty(s.oldValues['guardianName'])}" class="old-value">Old: <span th:text="${s.oldValues['guardianName']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['guardianContact']} ? 'changed-field' : ''">
-                        <input th:name="|students[${iter.index}].guardianContact|" th:value="${s.guardianContact}" th:classappend="${s.changedFields['guardianContact']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
-                        <div th:if="${s.changedFields['guardianContact']}" class="old-value">Old: <span th:text="${s.oldValues['guardianContact']}"></span></div>
+                        <input th:name="|students[${iter.index}].guardianContact|" th:value="${s.guardianContact}" th:classappend="${s.changedFields['guardianContact']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="[6-9][0-9]{9}" title="Mobile number must be 10 digits starting with 6-9" maxlength="10"/>
+                        <div th:if="${s.changedFields['guardianContact'] and s.oldValues['guardianContact'] != null and !#strings.isEmpty(s.oldValues['guardianContact'])}" class="old-value">Old: <span th:text="${s.oldValues['guardianContact']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['guardianRelation']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].guardianRelation|" th:value="${s.guardianRelation}" th:classappend="${s.changedFields['guardianRelation']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
-                        <div th:if="${s.changedFields['guardianRelation']}" class="old-value">Old: <span th:text="${s.oldValues['guardianRelation']}"></span></div>
+                        <div th:if="${s.changedFields['guardianRelation'] and s.oldValues['guardianRelation'] != null and !#strings.isEmpty(s.oldValues['guardianRelation'])}" class="old-value">Old: <span th:text="${s.oldValues['guardianRelation']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['guardianAadhaar']} ? 'changed-field' : ''">
-                        <input th:name="|students[${iter.index}].guardianAadhaar|" th:value="${s.guardianAadhaar}" th:classappend="${s.changedFields['guardianAadhaar']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
-                        <div th:if="${s.changedFields['guardianAadhaar']}" class="old-value">Old: <span th:text="${s.oldValues['guardianAadhaar']}"></span></div>
+                        <input th:name="|students[${iter.index}].guardianAadhaar|" th:value="${s.guardianAadhaar}" th:classappend="${s.changedFields['guardianAadhaar']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="[0-9]{12}" title="Aadhaar must be exactly 12 digits" maxlength="12"/>
+                        <div th:if="${s.changedFields['guardianAadhaar'] and s.oldValues['guardianAadhaar'] != null and !#strings.isEmpty(s.oldValues['guardianAadhaar'])}" class="old-value">Old: <span th:text="${s.oldValues['guardianAadhaar']}"></span></div>
                     </td>
                     <td th:class="${s.changedFields['familyStatus']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].familyStatus|" th:value="${s.familyStatus}" th:classappend="${s.changedFields['familyStatus']} ? ' changed-field' : ''" class="form-control form-control-sm"/>

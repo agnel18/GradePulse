@@ -30,7 +30,12 @@ public class AttendanceService {
 
     @Transactional
     public AttendanceSubmissionResult submitAttendance(AttendanceSubmission submission) {
-        ClassSection classSection = classSectionRepository.findById(submission.getClassSectionId())
+        Long classSectionId = submission.getClassSectionId();
+        if (classSectionId == null) {
+            throw new IllegalArgumentException("Class section ID cannot be null");
+        }
+        
+        ClassSection classSection = classSectionRepository.findById(classSectionId)
             .orElseThrow(() -> new IllegalArgumentException("Class section not found"));
 
         LocalDate attendanceDate = submission.getAttendanceDate() != null 
@@ -45,6 +50,12 @@ public class AttendanceService {
 
         for (Map.Entry<Long, AttendanceStatus> entry : submission.getStudentAttendance().entrySet()) {
             Long studentId = entry.getKey();
+            if (studentId == null) {
+                errors.add("Student ID cannot be null");
+                failedCount++;
+                continue;
+            }
+            
             AttendanceStatus status = entry.getValue();
 
             try {
@@ -169,6 +180,10 @@ public class AttendanceService {
     }
 
     public List<StudentAttendanceDto> getStudentsForAttendance(Long classSectionId) {
+        if (classSectionId == null) {
+            throw new IllegalArgumentException("Class section ID cannot be null");
+        }
+        
         ClassSection classSection = classSectionRepository.findById(classSectionId)
             .orElseThrow(() -> new IllegalArgumentException("Class section not found"));
 
@@ -225,6 +240,10 @@ public class AttendanceService {
     }
 
     public boolean isAttendanceMarkedForDate(Long classSectionId, LocalDate date) {
+        if (classSectionId == null) {
+            return false;
+        }
+        
         ClassSection classSection = classSectionRepository.findById(classSectionId).orElse(null);
         if (classSection == null) {
             return false;

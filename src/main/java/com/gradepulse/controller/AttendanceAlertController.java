@@ -60,34 +60,37 @@ public class AttendanceAlertController {
                 String message = buildAttendanceMessage(student, alertType);
                 
                 // Send to father
-                if (student.getFatherContact() != null && student.getFatherContact().matches("\\d{10}")) {
+                if (student.getFatherContact() != null && !student.getFatherContact().trim().isEmpty()) {
                     try {
                         whatsAppService.send(student.getFatherContact(), message);
                         sentCount++;
+                        log.info("Sent alert to father: {}", student.getFatherContact());
                     } catch (Exception e) {
-                        log.warn("Failed to send to father: {}", e.getMessage());
+                        log.warn("Failed to send to father {}: {}", student.getFatherContact(), e.getMessage());
                         failedCount++;
                     }
                 }
                 
                 // Send to mother
-                if (student.getMotherContact() != null && student.getMotherContact().matches("\\d{10}")) {
+                if (student.getMotherContact() != null && !student.getMotherContact().trim().isEmpty()) {
                     try {
                         whatsAppService.send(student.getMotherContact(), message);
                         sentCount++;
+                        log.info("Sent alert to mother: {}", student.getMotherContact());
                     } catch (Exception e) {
-                        log.warn("Failed to send to mother: {}", e.getMessage());
+                        log.warn("Failed to send to mother {}: {}", student.getMotherContact(), e.getMessage());
                         failedCount++;
                     }
                 }
                 
                 // Send to guardian
-                if (student.getGuardianContact() != null && student.getGuardianContact().matches("\\d{10}")) {
+                if (student.getGuardianContact() != null && !student.getGuardianContact().trim().isEmpty()) {
                     try {
                         whatsAppService.send(student.getGuardianContact(), message);
                         sentCount++;
+                        log.info("Sent alert to guardian: {}", student.getGuardianContact());
                     } catch (Exception e) {
-                        log.warn("Failed to send to guardian: {}", e.getMessage());
+                        log.warn("Failed to send to guardian {}: {}", student.getGuardianContact(), e.getMessage());
                         failedCount++;
                     }
                 }

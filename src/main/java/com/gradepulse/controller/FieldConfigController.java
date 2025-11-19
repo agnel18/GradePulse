@@ -33,6 +33,7 @@ public class FieldConfigController {
         model.addAttribute("fields", fields);
         model.addAttribute("totalFields", fields.size());
         model.addAttribute("activeFields", fields.stream().filter(FieldConfig::getActive).count());
+        model.addAttribute("customFields", fields.size()); // Custom fields added by user
         log.info("Loaded {} fields", fields.size());
         return "fields";
     }
@@ -165,54 +166,54 @@ public class FieldConfigController {
         
         int colIndex = 0;
         
-        // CORE FIELDS - Always included in this exact order
-        String[] coreFields = {
-            "student_id",           // Required for identifying students
-            "full_name",            // Required
-            "date_of_birth",        // Standard field
-            "gender",               // Standard field
-            "apaar_id",
-            "aadhaar_number",
-            "category",
-            "address",
-            "photo_url",
-            "previous_school_tc_url",
-            "admission_class",      // Historical record (never changes)
-            "current_class",        // Current class after promotions (NEW in V6)
-            "admission_date",
-            "enrollment_no",
-            "previous_marksheet_url",
-            "blood_group",
-            "allergies_conditions",
-            "immunization",
-            "height_cm",
-            "weight_kg",
-            "vision_check",
-            "character_cert_url",
-            "aadhaar_card_url",
-            "fee_status",
-            "attendance_percent",
-            "udise_uploaded",
-            "father_name",
-            "father_contact",       // Required for WhatsApp
-            "father_aadhaar",
-            "mother_name",
-            "mother_contact",       // Required for WhatsApp
-            "mother_aadhaar",
-            "guardian_name",
-            "guardian_contact",
-            "guardian_relation",
-            "guardian_aadhaar",
-            "family_status",
-            "language_preference"
+        // CORE FIELDS - Human readable display names with required markers
+        String[][] coreFields = {
+            {"Student ID *", "student_id"},
+            {"Full Name *", "full_name"},
+            {"Date of Birth", "date_of_birth"},
+            {"Gender", "gender"},
+            {"APAAR ID", "apaar_id"},
+            {"Aadhaar Number", "aadhaar_number"},
+            {"Category", "category"},
+            {"Address", "address"},
+            {"Photo URL", "photo_url"},
+            {"Previous School TC", "previous_school_tc_url"},
+            {"Admission Class", "admission_class"},
+            {"Current Class *", "current_class"},
+            {"Admission Date", "admission_date"},
+            {"Enrollment Number", "enrollment_no"},
+            {"Previous Marksheet", "previous_marksheet_url"},
+            {"Blood Group", "blood_group"},
+            {"Allergies/Conditions", "allergies_conditions"},
+            {"Immunization", "immunization"},
+            {"Height (cm)", "height_cm"},
+            {"Weight (kg)", "weight_kg"},
+            {"Vision Check", "vision_check"},
+            {"Character Certificate", "character_cert_url"},
+            {"Aadhaar Card URL", "aadhaar_card_url"},
+            {"Fee Status", "fee_status"},
+            {"Attendance %", "attendance_percent"},
+            {"UDISE Uploaded", "udise_uploaded"},
+            {"Father Name", "father_name"},
+            {"Father Contact *", "father_contact"},
+            {"Father Aadhaar", "father_aadhaar"},
+            {"Mother Name", "mother_name"},
+            {"Mother Contact *", "mother_contact"},
+            {"Mother Aadhaar", "mother_aadhaar"},
+            {"Guardian Name", "guardian_name"},
+            {"Guardian Contact", "guardian_contact"},
+            {"Guardian Relation", "guardian_relation"},
+            {"Guardian Aadhaar", "guardian_aadhaar"},
+            {"Family Status", "family_status"},
+            {"Language Preference", "language_preference"}
         };
         
-        // Add core field headers
-        for (String fieldName : coreFields) {
+        // Add core field headers with display names
+        for (String[] field : coreFields) {
             Cell cell = headerRow.createCell(colIndex++);
-            cell.setCellValue(fieldName);
+            cell.setCellValue(field[0]); // Use display name
             cell.setCellStyle(headerStyle);
-            sheet.setColumnWidth(cell.getColumnIndex(), 20 * 256); // 20 characters wide
+            sheet.setColumnWidth(cell.getColumnIndex(), 20 * 256);
         }
         
         // Add dynamic fields from field_config (only active fields)

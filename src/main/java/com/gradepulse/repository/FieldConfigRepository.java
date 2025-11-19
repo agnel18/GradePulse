@@ -8,6 +8,8 @@ import java.util.List;
 public interface FieldConfigRepository extends JpaRepository<FieldConfig, Long> {
     List<FieldConfig> findByActiveTrueOrderBySortOrderAsc();
     
+    List<FieldConfig> findByActiveOrderBySortOrderAsc(Boolean active);
+    
     List<FieldConfig> findAllByOrderBySortOrderAsc();
     
     boolean existsByFieldName(String fieldName);

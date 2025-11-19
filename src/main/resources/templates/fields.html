@@ -171,24 +171,26 @@
     <div id="alertContainer"></div>
 
     <!-- Field List -->
-    <div class="row">
-        <div th:each="field : ${fields}" class="col-md-6 mb-3">
+    <div class="row" id="fieldsList">
+        <div th:each="field : ${fields}" class="col-md-6 mb-3 field-item" th:data-id="${field.id}" draggable="true">
             <div th:class="'card field-card ' + (${field.active} ? '' : 'inactive')" th:id="'field-' + ${field.id}">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
+                        <div class="drag-handle me-2" style="cursor: move; color: #ccc;" title="Drag to reorder">
+                            <i class="fas fa-grip-vertical"></i>
+                        </div>
                         <div class="flex-grow-1">
                             <h5 class="card-title mb-1" th:text="${field.displayName}">Field Name</h5>
                             <p class="text-muted small mb-2">
                                 <strong>Field Code:</strong> <code th:text="${field.fieldName}">field_name</code>
                             </p>
                             <div class="d-flex gap-2 flex-wrap align-items-center">
-                                <span th:class="'badge ' + (${field.fieldType} == 'STRING' ? 'bg-primary' : ${field.fieldType} == 'NUMBER' ? 'bg-success' : ${field.fieldType} == 'DATE' ? 'bg-info' : ${field.fieldType} == 'BOOLEAN' ? 'bg-warning' : 'bg-danger') + ' badge-type'">
-                                    <span th:if="${field.fieldType} == 'STRING'">📝 Text</span>
-                                    <span th:if="${field.fieldType} == 'NUMBER'">🔢 Number</span>
-                                    <span th:if="${field.fieldType} == 'DATE'">📅 Date</span>
-                                    <span th:if="${field.fieldType} == 'BOOLEAN'">☑️ Yes/No</span>
-                                    <span th:if="${field.fieldType} == 'FILE_URL'">📎 File Link</span>
-                                </span>
+                                <span th:if="${field.fieldType} == 'STRING'" class="badge bg-primary badge-type">📝 Text</span>
+                                <span th:if="${field.fieldType} == 'NUMBER'" class="badge bg-success badge-type">🔢 Number</span>
+                                <span th:if="${field.fieldType} == 'DATE'" class="badge bg-info badge-type">📅 Date</span>
+                                <span th:if="${field.fieldType} == 'BOOLEAN'" class="badge bg-warning badge-type">☑️ Yes/No</span>
+                                <span th:if="${field.fieldType} == 'FILE_URL'" class="badge bg-danger badge-type">📎 File Link</span>
+                                
                                 <span th:if="${field.required}" class="badge bg-danger badge-type">⭐ Required</span>
                                 <span th:unless="${field.active}" class="badge bg-secondary badge-type">❌ Inactive</span>
                             </div>
@@ -231,47 +233,34 @@
                 </div>
                 <form id="addFieldForm">
                     <div class="mb-3">
-                        <label class="form-label"><strong>Field Name (for Excel)</strong> *</label>
+                        <label class="form-label"><strong>Field Name</strong> (for backend) *</label>
                         <input type="text" class="form-control" id="fieldName" required
                                placeholder="Example: grandfather_name" pattern="[a-z_]+">
-                        <small class="text-muted">
-                            <i class="fas fa-lightbulb"></i> This appears in Excel column header. Use lowercase and underscores (e.g., bus_route_number)
-                        </small>
+                        <small class="text-muted">Use lowercase and underscores (e.g., bus_route_number)</small>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label"><strong>Display Name (What People See)</strong> *</label>
+                        <label class="form-label"><strong>Display Name</strong> (for Excel & screens) *</label>
                         <input type="text" class="form-control" id="displayName" required
                                placeholder="Example: Grandfather's Name">
-                        <small class="text-muted">
-                            <i class="fas fa-eye"></i> This is the friendly name shown on screens (e.g., Bus Route Number)
-                        </small>
+                        <small class="text-muted">This friendly name appears in Excel headers and on all screens</small>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label"><strong>What Type of Information?</strong> *</label>
+                        <label class="form-label"><strong>Field Type</strong> *</label>
                         <select class="form-select" id="fieldType" required>
-                            <option value="STRING">\ud83d\udcdd Text (Names, addresses, descriptions)</option>
-                            <option value="NUMBER">\ud83d\udd22 Number (Age, marks, phone numbers)</option>
-                            <option value="DATE">\ud83d\udcc5 Date (Birth dates, joining dates)</option>
-                            <option value="BOOLEAN">\u2611\ufe0f Yes/No (Vaccinated? Hostel student?)</option>
-                            <option value="FILE_URL">\ud83d\udcce File Link (Google Drive links, certificates)</option>
+                            <option value="STRING">Text</option>
+                            <option value="NUMBER">Number</option>
+                            <option value="DATE">Date</option>
+                            <option value="BOOLEAN">Yes/No</option>
+                            <option value="FILE_URL">File Link</option>
                         </select>
-                        <small class="text-muted">
-                            <i class="fas fa-question-circle"></i> Choose the type of data this field will store
-                        </small>
                     </div>
                     <div class="mb-3 form-check">
                         <input type="checkbox" class="form-check-input" id="required">
-                        <label class="form-check-label" for="required">
-                            <strong>\u2b50 This field is Required</strong>
-                        </label>
-                        <br><small class="text-muted">If checked, students cannot be uploaded without this information</small>
+                        <label class="form-check-label" for="required">This field is required</label>
                     </div>
                     <div class="mb-3 form-check">
                         <input type="checkbox" class="form-check-input" id="active" checked>
-                        <label class="form-check-label" for="active">
-                            <strong>\u2705 Field is Active (appears in Excel template)</strong>
-                        </label>
-                        <br><small class="text-muted">Uncheck to hide this field from the Excel template temporarily</small>
+                        <label class="form-check-label" for="active">Field is active</label>
                     </div>
                 </form>
             </div>
@@ -341,11 +330,16 @@
     async function toggleField(id) {
         try {
             const response = await fetch(`/fields/toggle/${id}`, {method: 'POST'});
-            if (response.ok) {
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
                 showAlert('Field status updated!', 'success');
                 setTimeout(() => location.reload(), 1000);
+            } else {
+                showAlert(data.error || 'Failed to toggle field', 'danger');
             }
         } catch (error) {
+            console.error('Toggle error:', error);
             showAlert('Error: ' + error.message, 'danger');
         }
     }
@@ -355,17 +349,85 @@
         
         try {
             const response = await fetch(`/fields/delete/${id}`, {method: 'POST'});
-            if (response.ok) {
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
                 showAlert('Field deleted successfully!', 'success');
                 setTimeout(() => location.reload(), 1000);
+            } else {
+                showAlert(data.error || 'Failed to delete field', 'danger');
             }
         } catch (error) {
+            console.error('Delete error:', error);
             showAlert('Error: ' + error.message, 'danger');
+        }
+    }
+
+    // Drag and drop for reordering
+    let draggedElement = null;
+
+    function initDragAndDrop() {
+        const fieldItems = document.querySelectorAll('.field-item');
+        
+        fieldItems.forEach(item => {
+            item.addEventListener('dragstart', function(e) {
+                draggedElement = this;
+                this.style.opacity = '0.5';
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            
+            item.addEventListener('dragend', function() {
+                this.style.opacity = '1';
+            });
+            
+            item.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                
+                if (this !== draggedElement) {
+                    const rect = this.getBoundingClientRect();
+                    const midpoint = rect.left + rect.width / 2;
+                    
+                    if (e.clientX < midpoint) {
+                        this.parentNode.insertBefore(draggedElement, this);
+                    } else {
+                        this.parentNode.insertBefore(draggedElement, this.nextSibling);
+                    }
+                }
+            });
+            
+            item.addEventListener('drop', function(e) {
+                e.preventDefault();
+                saveFieldOrder();
+            });
+        });
+    }
+
+    async function saveFieldOrder() {
+        const fieldItems = document.querySelectorAll('.field-item');
+        const fieldIds = Array.from(fieldItems).map(item => parseInt(item.dataset.id));
+        
+        try {
+            const response = await fetch('/fields/reorder', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(fieldIds)
+            });
+            
+            if (response.ok) {
+                showAlert('Field order updated!', 'success');
+            }
+        } catch (error) {
+            console.error('Reorder error:', error);
+            showAlert('Error updating order: ' + error.message, 'danger');
         }
     }
 
     // Event listeners for buttons
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize drag and drop
+        initDragAndDrop();
+        
         // Toggle field buttons
         document.querySelectorAll('.toggle-field-btn').forEach(btn => {
             btn.addEventListener('click', function() {

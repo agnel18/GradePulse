@@ -30,11 +30,104 @@ public class FieldConfigController {
     @GetMapping("/fields")
     public String listFields(Model model) {
         List<FieldConfig> fields = fieldConfigRepository.findAllByOrderBySortOrderAsc();
+        
+        // Fix display names if they haven't been updated yet
+        fields.stream()
+            .filter(f -> "previous_school_tc_url".equals(f.getFieldName()) && "TC".equals(f.getDisplayName()))
+            .findFirst()
+            .ifPresent(f -> {
+                f.setDisplayName("Transfer Certificate (TC)");
+                fieldConfigRepository.save(f);
+                log.info("Updated TC field display name");
+            });
+        
+        fields.stream()
+            .filter(f -> "aadhaar_number".equals(f.getFieldName()) && "Aadhaar".equals(f.getDisplayName()))
+            .findFirst()
+            .ifPresent(f -> {
+                f.setDisplayName("Student Aadhaar");
+                fieldConfigRepository.save(f);
+                log.info("Updated Aadhaar field display name");
+            });
+        
+        fields.stream()
+            .filter(f -> "character_cert_url".equals(f.getFieldName()) && "Character Cert".equals(f.getDisplayName()))
+            .findFirst()
+            .ifPresent(f -> {
+                f.setDisplayName("Character Certificate");
+                fieldConfigRepository.save(f);
+                log.info("Updated Character Certificate field display name");
+            });
+        
+        fields.stream()
+            .filter(f -> "apaar_id".equals(f.getFieldName()) && "APAAR ID".equals(f.getDisplayName()))
+            .findFirst()
+            .ifPresent(f -> {
+                f.setDisplayName("APAAR ID (Automated Permanent Academic Account Registry)");
+                fieldConfigRepository.save(f);
+                log.info("Updated APAAR ID field display name");
+            });
+        
+        fields.stream()
+            .filter(f -> "udise_uploaded".equals(f.getFieldName()) && "UDISE Uploaded".equals(f.getDisplayName()))
+            .findFirst()
+            .ifPresent(f -> {
+                f.setDisplayName("UDISE Uploaded (Unified District Information System for Education)");
+                fieldConfigRepository.save(f);
+                log.info("Updated UDISE field display name");
+            });
+        
+        fields.stream()
+            .filter(f -> "height_cm".equals(f.getFieldName()) && "Height".equals(f.getDisplayName()))
+            .findFirst()
+            .ifPresent(f -> {
+                f.setDisplayName("Height (cm)");
+                fieldConfigRepository.save(f);
+                log.info("Updated Height field display name");
+            });
+        
+        fields.stream()
+            .filter(f -> "weight_kg".equals(f.getFieldName()) && "Weight".equals(f.getDisplayName()))
+            .findFirst()
+            .ifPresent(f -> {
+                f.setDisplayName("Weight (kg)");
+                fieldConfigRepository.save(f);
+                log.info("Updated Weight field display name");
+            });
+        
+        fields.stream()
+            .filter(f -> "vision_check".equals(f.getFieldName()) && "Vision".equals(f.getDisplayName()))
+            .findFirst()
+            .ifPresent(f -> {
+                f.setDisplayName("Vision (6/6 or Diopters)");
+                fieldConfigRepository.save(f);
+                log.info("Updated Vision field display name");
+            });
+        
+        fields.stream()
+            .filter(f -> "date_of_birth".equals(f.getFieldName()) && "DOB".equals(f.getDisplayName()))
+            .findFirst()
+            .ifPresent(f -> {
+                f.setDisplayName("DOB (DD/MM/YYYY)");
+                fieldConfigRepository.save(f);
+                log.info("Updated DOB field display name");
+            });
+        
+        fields.stream()
+            .filter(f -> "admission_date".equals(f.getFieldName()) && "Admission Date".equals(f.getDisplayName()))
+            .findFirst()
+            .ifPresent(f -> {
+                f.setDisplayName("Admission Date (DD/MM/YYYY)");
+                fieldConfigRepository.save(f);
+                log.info("Updated Admission Date field display name");
+            });
+        
         model.addAttribute("fields", fields);
         model.addAttribute("totalFields", fields.size());
         model.addAttribute("activeFields", fields.stream().filter(FieldConfig::getActive).count());
-        model.addAttribute("customFields", fields.size()); // Custom fields added by user
-        log.info("Loaded {} fields", fields.size());
+        // Custom fields are those beyond the 36 core fields loaded from migration
+        model.addAttribute("customFields", Math.max(0, fields.size() - 36));
+        log.info("Loaded {} fields ({} custom)", fields.size(), Math.max(0, fields.size() - 36));
         return "fields";
     }
 
@@ -137,12 +230,11 @@ public class FieldConfigController {
     
     /**
      * Generate dynamic Excel template based on active field configuration
-     * Core fields (student_id, full_name, admission_class, current_class) are always included first
-     * Then adds all active fields from field_config table in sort order
+     * Only includes fields where active=true, in sort_order sequence
      */
     @GetMapping("/template.xlsx")
     public ResponseEntity<byte[]> downloadTemplate() throws IOException {
-        log.info("Generating dynamic Excel template based on field configuration");
+        log.info("Generating dynamic Excel template based on active field configuration");
         
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Students");
@@ -164,131 +256,51 @@ public class FieldConfigController {
         headerStyle.setBorderLeft(BorderStyle.THIN);
         headerStyle.setBorderRight(BorderStyle.THIN);
         
-        int colIndex = 0;
+        // Get all active fields in sort order from database
+        List<FieldConfig> activeFields = fieldConfigRepository.findByActiveOrderBySortOrderAsc(true);
+        log.info("Generating template with {} active fields", activeFields.size());
         
-        // CORE FIELDS - Human readable display names with required markers
-        String[][] coreFields = {
-            {"Student ID *", "student_id"},
-            {"Full Name *", "full_name"},
-            {"Date of Birth", "date_of_birth"},
-            {"Gender", "gender"},
-            {"APAAR ID", "apaar_id"},
-            {"Aadhaar Number", "aadhaar_number"},
-            {"Category", "category"},
-            {"Address", "address"},
-            {"Photo URL", "photo_url"},
-            {"Previous School TC", "previous_school_tc_url"},
-            {"Admission Class", "admission_class"},
-            {"Current Class *", "current_class"},
-            {"Admission Date", "admission_date"},
-            {"Enrollment Number", "enrollment_no"},
-            {"Previous Marksheet", "previous_marksheet_url"},
-            {"Blood Group", "blood_group"},
-            {"Allergies/Conditions", "allergies_conditions"},
-            {"Immunization", "immunization"},
-            {"Height (cm)", "height_cm"},
-            {"Weight (kg)", "weight_kg"},
-            {"Vision Check", "vision_check"},
-            {"Character Certificate", "character_cert_url"},
-            {"Aadhaar Card URL", "aadhaar_card_url"},
-            {"Fee Status", "fee_status"},
-            {"Attendance %", "attendance_percent"},
-            {"UDISE Uploaded", "udise_uploaded"},
-            {"Father Name", "father_name"},
-            {"Father Contact *", "father_contact"},
-            {"Father Aadhaar", "father_aadhaar"},
-            {"Mother Name", "mother_name"},
-            {"Mother Contact *", "mother_contact"},
-            {"Mother Aadhaar", "mother_aadhaar"},
-            {"Guardian Name", "guardian_name"},
-            {"Guardian Contact", "guardian_contact"},
-            {"Guardian Relation", "guardian_relation"},
-            {"Guardian Aadhaar", "guardian_aadhaar"},
-            {"Family Status", "family_status"},
-            {"Language Preference", "language_preference"}
-        };
+        // Create TEXT format style for all data cells
+        DataFormat format = workbook.createDataFormat();
+        CellStyle textStyle = workbook.createCellStyle();
+        textStyle.setDataFormat(format.getFormat("@")); // @ = TEXT format
         
-        // Add core field headers with display names
-        for (String[] field : coreFields) {
-            Cell cell = headerRow.createCell(colIndex++);
-            cell.setCellValue(field[0]); // Use display name
-            cell.setCellStyle(headerStyle);
-            sheet.setColumnWidth(cell.getColumnIndex(), 20 * 256);
-        }
-        
-        // Add dynamic fields from field_config (only active fields)
-        List<FieldConfig> dynamicFields = fieldConfigRepository.findByActiveOrderBySortOrderAsc(true);
-        log.info("Adding {} dynamic fields to template", dynamicFields.size());
-        
-        for (FieldConfig field : dynamicFields) {
-            Cell cell = headerRow.createCell(colIndex++);
-            String headerText = field.getDisplayName() + (field.getRequired() ? " *" : "");
-            cell.setCellValue(headerText);
-            cell.setCellStyle(headerStyle);
-            sheet.setColumnWidth(cell.getColumnIndex(), 20 * 256);
-            log.debug("Added dynamic field: {} ({})", field.getDisplayName(), field.getFieldName());
-        }
-        
-        // Add example data row with hints
-        Row exampleRow = sheet.createRow(1);
-        CellStyle exampleStyle = workbook.createCellStyle();
+        // Create TEXT style with example formatting
+        CellStyle exampleTextStyle = workbook.createCellStyle();
+        exampleTextStyle.setDataFormat(format.getFormat("@"));
         Font exampleFont = workbook.createFont();
         exampleFont.setItalic(true);
         exampleFont.setColor(IndexedColors.GREY_50_PERCENT.getIndex());
-        exampleStyle.setFont(exampleFont);
+        exampleTextStyle.setFont(exampleFont);
         
-        int exampleCol = 0;
-        String[] exampleData = {
-            "STU001",                   // student_id
-            "John Doe",                 // full_name
-            "15-01-2010",              // date_of_birth (DD-MM-YYYY)
-            "Male",                     // gender
-            "APAAR123456",             // apaar_id
-            "123456789012",            // aadhaar_number
-            "General",                  // category
-            "123 Main St, City",       // address
-            "https://example.com/photo.jpg", // photo_url
-            "https://example.com/tc.pdf",    // previous_school_tc_url
-            "5th",                      // admission_class (NEVER CHANGE)
-            "6th",                      // current_class (UPDATE YEARLY)
-            "15-04-2024",              // admission_date
-            "ENR2024001",              // enrollment_no
-            "https://example.com/marksheet.pdf", // previous_marksheet_url
-            "O+",                       // blood_group
-            "None",                     // allergies_conditions
-            "Yes",                      // immunization
-            "145",                      // height_cm
-            "40",                       // weight_kg
-            "Normal",                   // vision_check
-            "https://example.com/character.pdf", // character_cert_url
-            "https://example.com/aadhaar.pdf",   // aadhaar_card_url
-            "Paid",                     // fee_status
-            "95.5",                     // attendance_percent
-            "Yes",                      // udise_uploaded
-            "Mr. John Smith",          // father_name
-            "+971508714823",           // father_contact (INTERNATIONAL FORMAT)
-            "123456789012",            // father_aadhaar
-            "Mrs. Jane Smith",         // mother_name
-            "+919876543210",           // mother_contact (INTERNATIONAL FORMAT)
-            "123456789012",            // mother_aadhaar
-            "Mr. Guardian Name",       // guardian_name
-            "+971501234567",           // guardian_contact
-            "Uncle",                    // guardian_relation
-            "123456789012",            // guardian_aadhaar
-            "Both Parents",            // family_status
-            "ENGLISH"                   // language_preference
-        };
+        int colIndex = 0;
         
-        for (int i = 0; i < exampleData.length && i < coreFields.length; i++) {
-            Cell cell = exampleRow.createCell(exampleCol++);
-            cell.setCellValue(exampleData[i]);
-            cell.setCellStyle(exampleStyle);
+        // Add all active field headers with display names
+        for (FieldConfig field : activeFields) {
+            Cell cell = headerRow.createCell(colIndex);
+            String headerText = field.getDisplayName() + (field.getRequired() ? " *" : "");
+            cell.setCellValue(headerText);
+            cell.setCellStyle(headerStyle);
+            sheet.setColumnWidth(colIndex, 25 * 256);
+            colIndex++;
         }
         
-        // Add example data for dynamic fields
-        for (int i = 0; i < dynamicFields.size(); i++) {
-            Cell cell = exampleRow.createCell(exampleCol++);
-            FieldConfig field = dynamicFields.get(i);
+        // Pre-format 100 rows as TEXT to ensure Excel recognizes the format
+        for (int rowNum = 1; rowNum <= 100; rowNum++) {
+            Row row = sheet.createRow(rowNum);
+            for (int col = 0; col < colIndex; col++) {
+                Cell cell = row.createCell(col);
+                cell.setCellStyle(rowNum == 1 ? exampleTextStyle : textStyle);
+            }
+        }
+        
+        // Add example data in row 1
+        Row exampleRow = sheet.getRow(1);
+        int exampleCol = 0;
+        
+        // Add example data for all active fields based on their type
+        for (FieldConfig field : activeFields) {
+            Cell cell = exampleRow.getCell(exampleCol++);
             String exampleValue = switch (field.getFieldType()) {
                 case "STRING" -> "Sample text";
                 case "NUMBER" -> "123";
@@ -298,7 +310,7 @@ public class FieldConfigController {
                 default -> "Sample";
             };
             cell.setCellValue(exampleValue);
-            cell.setCellStyle(exampleStyle);
+            // Style already applied when cell was created
         }
         
         // Auto-size columns
@@ -312,8 +324,7 @@ public class FieldConfigController {
         workbook.close();
         
         byte[] bytes = outputStream.toByteArray();
-        log.info("Template generated successfully with {} columns ({} core + {} dynamic)", 
-                 colIndex, coreFields.length, dynamicFields.size());
+        log.info("Template generated successfully with {} active columns", colIndex);
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);

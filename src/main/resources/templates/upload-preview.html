@@ -75,12 +75,35 @@
             color: var(--text-primary);
         }
         
-        .table-responsive { overflow-x: auto; }
+        .table-responsive { 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch;
+        }
+        .table td, .table th {
+            min-width: 120px;
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 8px 12px;
+        }
+        .table td:nth-last-child(2) {
+            /* Error column - allow wrapping and wider width */
+            white-space: normal;
+            max-width: 350px;
+            min-width: 200px;
+        }
+        .table td input.form-control {
+            min-width: 110px;
+        }
         .error { color: red; font-size: 0.9em; }
         .changed-field { background-color: #fff3cd !important; }
         [data-theme="dark"] .changed-field { background-color: #ffc107 !important; color: #000 !important; }
         .old-value { font-size: 0.85em; color: #6c757d; margin-top: 2px; }
         [data-theme="dark"] .old-value { color: var(--text-secondary); }
+        @media (max-width: 768px) {
+            .table td, .table th { min-width: 100px; font-size: 0.9rem; }
+        }
     </style>
 </head>
 <body>

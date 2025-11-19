@@ -192,18 +192,13 @@
                 <!-- Phone Number Format Guide -->
                 <div class="alert alert-info mt-3" role="alert">
                     <h6 class="alert-heading">
-                        <i class="fas fa-phone me-2"></i>Phone Number Format for WhatsApp
+                        <i class="fas fa-phone me-2"></i>Phone Number Format
                     </h6>
-                    <p class="mb-2">Contact numbers must be in international format for WhatsApp notifications:</p>
-                    <ul class="mb-2 small">
-                        <li><strong>✅ Correct:</strong> +971508714823 (UAE), +919876543210 (India), +14155551234 (USA)</li>
-                        <li><strong>⚠️ Excel strips the + sign:</strong> If you type +971508714823, Excel shows 9.71509E+11</li>
-                        <li><strong>💡 Solution:</strong> Format cells as TEXT first, or just enter 971508714823 (we'll add the +)</li>
+                    <p class="mb-2">Enter phone numbers with country code (without + sign):</p>
+                    <ul class="mb-2">
+                        <li><strong>✅ Examples:</strong> 971508714823 (UAE), 919876543210 (India), 14155551234 (USA)</li>
+                        <li><strong>📝 Note:</strong> Template is pre-formatted as text - just type the numbers</li>
                     </ul>
-                    <p class="mb-0 small">
-                        <strong>Auto-fix:</strong> We automatically clean up spaces, dashes, and add missing + prefix!<br>
-                        <em>Examples: "971508714823" → "+971508714823", "00971-50-871-4823" → "+971508714823"</em>
-                    </p>
                 </div>
             </div>
         </div>
@@ -232,6 +227,16 @@ document.addEventListener('DOMContentLoaded', function() {
             uploadBtn.disabled = false;
             console.log('Button enabled');
         }
+    });
+
+    // Add form submit handler for debugging
+    const uploadForm = document.getElementById('uploadForm');
+    uploadForm.addEventListener('submit', function(e) {
+        console.log('Form submitting...', {
+            action: this.action,
+            method: this.method,
+            file: fileInput.files[0]
+        });
     });
 
     // Drag and drop

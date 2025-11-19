@@ -22,7 +22,7 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/login", "/h2-console/**", "/template.xlsx", 
-                               "/upload", "/dashboard", "/fields", "/attendance/**", 
+                               "/upload", "/dashboard", "/fields", "/fields/**", "/attendance/**", 
                                "/attendance-alerts", "/css/**", "/js/**", "/webfonts/**").permitAll()
                 .anyRequest().authenticated()
             )
@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
             )
-            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/fields/**"))
             .headers(headers -> headers
                 .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
                 .contentSecurityPolicy(csp -> csp.policyDirectives(

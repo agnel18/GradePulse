@@ -2,7 +2,9 @@ package com.gradepulse.controller;
 
 import com.google.gson.Gson;
 import com.gradepulse.dto.StudentUploadDto;
+import com.gradepulse.model.FieldConfig;
 import com.gradepulse.model.Student;
+import com.gradepulse.repository.FieldConfigRepository;
 import com.gradepulse.repository.StudentRepository;
 import com.gradepulse.service.WhatsAppService;
 import org.apache.poi.ss.usermodel.*;
@@ -34,6 +36,9 @@ public class UploadController {
     @Autowired
     private WhatsAppService whatsAppService;
 
+    @Autowired
+    private FieldConfigRepository fieldConfigRepository;
+
     private final Gson gson = new Gson();
 
     // === 1. Show upload page ===
@@ -59,63 +64,90 @@ public class UploadController {
         Sheet sheet = workbook.getSheetAt(0);
         List<StudentUploadDto> previewList = new ArrayList<>();
 
-        // Log headers
-        Row headerRow = sheet.getRow(0);
-        if (headerRow != null) {
-            StringBuilder headers = new StringBuilder();
-            for (int i = 0; i < headerRow.getLastCellNum(); i++) {
-                headers.append(getString(headerRow, i)).append(" | ");
-            }
-            log.info("Excel headers: {}", headers.toString());
+        // Build display name to field name mapping from database
+        List<FieldConfig> allFields = fieldConfigRepository.findAll();
+        Map<String, String> displayToFieldName = new HashMap<>();
+        for (FieldConfig field : allFields) {
+            displayToFieldName.put(field.getDisplayName().toLowerCase().trim(), field.getFieldName());
         }
+        log.info("Loaded {} field mappings from database", displayToFieldName.size());
+
+        // Read header row and build column index map
+        Row headerRow = sheet.getRow(0);
+        if (headerRow == null) {
+            log.error("No header row found in Excel file");
+            model.addAttribute("error", "Excel file must have a header row");
+            workbook.close();
+            return "upload";
+        }
+
+        Map<String, Integer> columnMap = buildColumnMap(headerRow, displayToFieldName);
+        log.info("Built column map with {} columns: {}", columnMap.size(), columnMap.keySet());
 
         int rowNum = 0;
         for (Row row : sheet) {
             rowNum++;
-            if (row.getRowNum() == 0) continue; // skip header row only
+            if (row.getRowNum() == 0) continue; // skip header row
+
+            // Skip empty rows (check if Student ID and Full Name are both blank)
+            String studentId = getStringByField(row, columnMap, "student_id");
+            String fullName = getStringByField(row, columnMap, "full_name");
+            
+            if ((studentId == null || studentId.trim().isEmpty()) && 
+                (fullName == null || fullName.trim().isEmpty())) {
+                log.debug("Skipping empty row {} (Excel row {})", rowNum - 1, row.getRowNum());
+                continue;
+            }
 
             log.info("Processing row {} (Excel row {})", rowNum - 1, row.getRowNum());
 
             StudentUploadDto dto = new StudentUploadDto();
-            dto.setStudentId(getString(row, 0));
-            dto.setFullName(getString(row, 1));
-            dto.setDateOfBirth(getDate(row, 2));
-            dto.setGender(getString(row, 3));
-            dto.setApaarId(getString(row, 4));
-            dto.setAadhaarNumber(getString(row, 5));
-            dto.setCategory(getString(row, 6));
-            dto.setAddress(getString(row, 7));
-            dto.setPhotoUrl(getString(row, 8));
-            dto.setPreviousSchoolTcUrl(getString(row, 9));
-            dto.setAdmissionClass(getString(row, 10));
-            dto.setCurrentClass(getString(row, 11)); // Current class after promotions
-            dto.setAdmissionDate(getDate(row, 12));
-            dto.setEnrollmentNo(getString(row, 13));
-            dto.setPreviousMarksheetUrl(getString(row, 14));
-            dto.setBloodGroup(getString(row, 15));
-            dto.setAllergiesConditions(getString(row, 16));
-            dto.setImmunization(getBoolean(row, 17));
-            dto.setHeightCm(getInt(row, 18));
-            dto.setWeightKg(getInt(row, 19));
-            dto.setVisionCheck(getString(row, 20));
-            dto.setCharacterCertUrl(getString(row, 21));
-            dto.setFeeStatus(getString(row, 22));
-            dto.setAttendancePercent(getDouble(row, 23));
-            dto.setUdiseUploaded(getBoolean(row, 24));
+            
+            // Map all fields dynamically using the column map
+            dto.setStudentId(studentId);
+            dto.setFullName(fullName);
+            dto.setDateOfBirth(getDateByField(row, columnMap, "date_of_birth"));
+            dto.setGender(getStringByField(row, columnMap, "gender"));
+            dto.setApaarId(getStringByField(row, columnMap, "apaar_id"));
+            dto.setAadhaarNumber(getStringByField(row, columnMap, "aadhaar_number"));
+            dto.setCategory(getStringByField(row, columnMap, "category"));
+            dto.setAddress(getStringByField(row, columnMap, "address"));
+            dto.setPhotoUrl(getStringByField(row, columnMap, "photo_url"));
+            dto.setPreviousSchoolTcUrl(getStringByField(row, columnMap, "previous_school_tc_url"));
+            dto.setAdmissionClass(getStringByField(row, columnMap, "admission_class"));
+            dto.setCurrentClass(getStringByField(row, columnMap, "current_class"));
+            dto.setAdmissionDate(getDateByField(row, columnMap, "admission_date"));
+            dto.setEnrollmentNo(getStringByField(row, columnMap, "enrollment_no"));
+            dto.setPreviousMarksheetUrl(getStringByField(row, columnMap, "previous_marksheet_url"));
+            dto.setBloodGroup(getStringByField(row, columnMap, "blood_group"));
+            dto.setAllergiesConditions(getStringByField(row, columnMap, "allergies_conditions"));
+            dto.setImmunization(getBooleanByField(row, columnMap, "immunization"));
+            dto.setHeightCm(getIntByField(row, columnMap, "height_cm"));
+            dto.setWeightKg(getIntByField(row, columnMap, "weight_kg"));
+            dto.setVisionCheck(getStringByField(row, columnMap, "vision_check"));
+            dto.setCharacterCertUrl(getStringByField(row, columnMap, "character_cert_url"));
+            dto.setFeeStatus(getStringByField(row, columnMap, "fee_status"));
+            dto.setAttendancePercent(getDoubleByField(row, columnMap, "attendance_percent"));
+            dto.setUdiseUploaded(getBooleanByField(row, columnMap, "udise_uploaded"));
 
             // Family - normalize phone numbers
-            dto.setFatherName(getString(row, 25));
-            dto.setFatherContact(normalizePhoneNumber(getString(row, 26)));
-            dto.setFatherAadhaar(getString(row, 27));
-            dto.setMotherName(getString(row, 28));
-            dto.setMotherContact(normalizePhoneNumber(getString(row, 29)));
-            dto.setMotherAadhaar(getString(row, 30));
-            dto.setGuardianName(getString(row, 31));
-            dto.setGuardianContact(normalizePhoneNumber(getString(row, 32)));
-            dto.setGuardianRelation(getString(row, 33));
-            dto.setGuardianAadhaar(getString(row, 34));
-            dto.setFamilyStatus(getString(row, 35));
-            dto.setLanguagePreference(getString(row, 36));
+            dto.setFatherName(getStringByField(row, columnMap, "father_name"));
+            dto.setFatherContact(normalizePhoneNumber(getStringByField(row, columnMap, "father_contact")));
+            dto.setFatherAadhaar(getStringByField(row, columnMap, "father_aadhaar"));
+            dto.setMotherName(getStringByField(row, columnMap, "mother_name"));
+            dto.setMotherContact(normalizePhoneNumber(getStringByField(row, columnMap, "mother_contact")));
+            dto.setMotherAadhaar(getStringByField(row, columnMap, "mother_aadhaar"));
+            dto.setGuardianName(getStringByField(row, columnMap, "guardian_name"));
+            
+            String rawGuardianContact = getStringByField(row, columnMap, "guardian_contact");
+            log.info("Row {}: Raw Guardian Contact = '{}', Normalized = '{}'", 
+                     row.getRowNum(), rawGuardianContact, normalizePhoneNumber(rawGuardianContact));
+            dto.setGuardianContact(normalizePhoneNumber(rawGuardianContact));
+            
+            dto.setGuardianRelation(getStringByField(row, columnMap, "guardian_relation"));
+            dto.setGuardianAadhaar(getStringByField(row, columnMap, "guardian_aadhaar"));
+            dto.setFamilyStatus(getStringByField(row, columnMap, "family_status"));
+            dto.setLanguagePreference(getStringByField(row, columnMap, "language_preference"));
 
             // Validate
             validateDto(dto);
@@ -151,6 +183,80 @@ public class UploadController {
         
         workbook.close();
         return "upload-preview";
+    }
+
+    /**
+     * Builds a map of field_name to column index by reading the Excel header row
+     * and matching display names to database field names.
+     */
+    private Map<String, Integer> buildColumnMap(Row headerRow, Map<String, String> displayToFieldName) {
+        Map<String, Integer> columnMap = new HashMap<>();
+        
+        for (int i = 0; i < headerRow.getLastCellNum(); i++) {
+            String headerValue = getString(headerRow, i);
+            if (headerValue == null || headerValue.trim().isEmpty()) {
+                continue;
+            }
+            
+            // Remove " *" suffix that indicates required fields in template
+            String cleanHeader = headerValue.trim();
+            if (cleanHeader.endsWith(" *")) {
+                cleanHeader = cleanHeader.substring(0, cleanHeader.length() - 2).trim();
+            }
+            
+            String normalizedHeader = cleanHeader.toLowerCase().trim();
+            String fieldName = displayToFieldName.get(normalizedHeader);
+            
+            if (fieldName != null) {
+                columnMap.put(fieldName, i);
+                log.info("Mapped column {}: '{}' -> field '{}'", i, headerValue, fieldName);
+            } else {
+                log.warn("Unknown column header at index {}: '{}' (cleaned: '{}')", i, headerValue, cleanHeader);
+            }
+        }
+        
+        return columnMap;
+    }
+
+    // Helper methods to get values by field name instead of column index
+    private String getStringByField(Row row, Map<String, Integer> columnMap, String fieldName) {
+        Integer colIndex = columnMap.get(fieldName);
+        if (colIndex == null) {
+            return null;
+        }
+        return getString(row, colIndex);
+    }
+
+    private LocalDate getDateByField(Row row, Map<String, Integer> columnMap, String fieldName) {
+        Integer colIndex = columnMap.get(fieldName);
+        if (colIndex == null) {
+            return null;
+        }
+        return getDate(row, colIndex);
+    }
+
+    private Boolean getBooleanByField(Row row, Map<String, Integer> columnMap, String fieldName) {
+        Integer colIndex = columnMap.get(fieldName);
+        if (colIndex == null) {
+            return null;
+        }
+        return getBoolean(row, colIndex);
+    }
+
+    private Integer getIntByField(Row row, Map<String, Integer> columnMap, String fieldName) {
+        Integer colIndex = columnMap.get(fieldName);
+        if (colIndex == null) {
+            return null;
+        }
+        return getInt(row, colIndex);
+    }
+
+    private Double getDoubleByField(Row row, Map<String, Integer> columnMap, String fieldName) {
+        Integer colIndex = columnMap.get(fieldName);
+        if (colIndex == null) {
+            return null;
+        }
+        return getDouble(row, colIndex);
     }
 
     // Compare all fields and mark changes in dto.changedFields and dto.oldValues
@@ -580,22 +686,22 @@ public class UploadController {
         
         String phone = phoneNumber.trim();
         
-        // Remove all spaces, dashes, parentheses
-        phone = phone.replaceAll("[\\s\\-()]+", "");
+        // Remove all spaces, dashes, parentheses, dots
+        phone = phone.replaceAll("[\\s\\-().]+", "");
         
         // Handle 00 prefix (convert to +)
         if (phone.startsWith("00")) {
             phone = "+" + phone.substring(2);
         }
         
-        // If it's just digits and looks like an international number (10-15 digits), add +
-        if (phone.matches("^\\d{10,15}$") && !phone.startsWith("0")) {
-            phone = "+" + phone;
+        // If starts with + followed by digits, keep it
+        if (phone.startsWith("+") && phone.substring(1).matches("^\\d{10,15}$")) {
+            return phone;
         }
         
-        // If it already has +, ensure no duplicate
-        if (phone.startsWith("+") && phone.length() > 1) {
-            return phone;
+        // If it's just digits and looks like an international number (10-15 digits), add +
+        if (phone.matches("^\\d{10,15}$")) {
+            phone = "+" + phone;
         }
         
         return phone;

@@ -88,33 +88,34 @@ public class UploadController {
             dto.setPhotoUrl(getString(row, 8));
             dto.setPreviousSchoolTcUrl(getString(row, 9));
             dto.setAdmissionClass(getString(row, 10));
-            dto.setAdmissionDate(getDate(row, 11));
-            dto.setEnrollmentNo(getString(row, 12));
-            dto.setPreviousMarksheetUrl(getString(row, 13));
-            dto.setBloodGroup(getString(row, 14));
-            dto.setAllergiesConditions(getString(row, 15));
-            dto.setImmunization(getBoolean(row, 16));
-            dto.setHeightCm(getInt(row, 17));
-            dto.setWeightKg(getInt(row, 18));
-            dto.setVisionCheck(getString(row, 19));
-            dto.setCharacterCertUrl(getString(row, 20));
-            dto.setFeeStatus(getString(row, 21));
-            dto.setAttendancePercent(getDouble(row, 22));
-            dto.setUdiseUploaded(getBoolean(row, 23));
+            dto.setCurrentClass(getString(row, 11)); // Current class after promotions
+            dto.setAdmissionDate(getDate(row, 12));
+            dto.setEnrollmentNo(getString(row, 13));
+            dto.setPreviousMarksheetUrl(getString(row, 14));
+            dto.setBloodGroup(getString(row, 15));
+            dto.setAllergiesConditions(getString(row, 16));
+            dto.setImmunization(getBoolean(row, 17));
+            dto.setHeightCm(getInt(row, 18));
+            dto.setWeightKg(getInt(row, 19));
+            dto.setVisionCheck(getString(row, 20));
+            dto.setCharacterCertUrl(getString(row, 21));
+            dto.setFeeStatus(getString(row, 22));
+            dto.setAttendancePercent(getDouble(row, 23));
+            dto.setUdiseUploaded(getBoolean(row, 24));
 
             // Family - normalize phone numbers
-            dto.setFatherName(getString(row, 24));
-            dto.setFatherContact(normalizePhoneNumber(getString(row, 25)));
-            dto.setFatherAadhaar(getString(row, 26));
-            dto.setMotherName(getString(row, 27));
-            dto.setMotherContact(normalizePhoneNumber(getString(row, 28)));
-            dto.setMotherAadhaar(getString(row, 29));
-            dto.setGuardianName(getString(row, 30));
-            dto.setGuardianContact(normalizePhoneNumber(getString(row, 31)));
-            dto.setGuardianRelation(getString(row, 32));
-            dto.setGuardianAadhaar(getString(row, 33));
-            dto.setFamilyStatus(getString(row, 34));
-            dto.setLanguagePreference(getString(row, 35));
+            dto.setFatherName(getString(row, 25));
+            dto.setFatherContact(normalizePhoneNumber(getString(row, 26)));
+            dto.setFatherAadhaar(getString(row, 27));
+            dto.setMotherName(getString(row, 28));
+            dto.setMotherContact(normalizePhoneNumber(getString(row, 29)));
+            dto.setMotherAadhaar(getString(row, 30));
+            dto.setGuardianName(getString(row, 31));
+            dto.setGuardianContact(normalizePhoneNumber(getString(row, 32)));
+            dto.setGuardianRelation(getString(row, 33));
+            dto.setGuardianAadhaar(getString(row, 34));
+            dto.setFamilyStatus(getString(row, 35));
+            dto.setLanguagePreference(getString(row, 36));
 
             // Validate
             validateDto(dto);
@@ -194,6 +195,10 @@ public class UploadController {
         if (!equalsObj(dto.getAdmissionClass(), existing.getAdmissionClass())) {
             dto.getChangedFields().put("admissionClass", true);
             dto.getOldValues().put("admissionClass", existing.getAdmissionClass());
+        }
+        if (!equalsObj(dto.getCurrentClass(), existing.getCurrentClass())) {
+            dto.getChangedFields().put("currentClass", true);
+            dto.getOldValues().put("currentClass", existing.getCurrentClass());
         }
         if (!equalsObj(dto.getAdmissionDate(), existing.getAdmissionDate())) {
             dto.getChangedFields().put("admissionDate", true);
@@ -359,6 +364,9 @@ public class UploadController {
             s.setPhotoUrl(dto.getPhotoUrl());
             s.setPreviousSchoolTcUrl(dto.getPreviousSchoolTcUrl());
             s.setAdmissionClass(dto.getAdmissionClass());
+            // Set current_class from upload, default to admission_class if not provided
+            s.setCurrentClass(dto.getCurrentClass() != null && !dto.getCurrentClass().isBlank() 
+                ? dto.getCurrentClass() : dto.getAdmissionClass());
             s.setAdmissionDate(dto.getAdmissionDate());
             s.setEnrollmentNo(dto.getEnrollmentNo());
             s.setPreviousMarksheetUrl(dto.getPreviousMarksheetUrl());
@@ -609,6 +617,7 @@ public class UploadController {
                 case "photoUrl" -> dto.setPhotoUrl(value);
                 case "previousSchoolTcUrl" -> dto.setPreviousSchoolTcUrl(value);
                 case "admissionClass" -> dto.setAdmissionClass(value);
+                case "currentClass" -> dto.setCurrentClass(value);
                 case "admissionDate" -> dto.setAdmissionDate(LocalDate.parse(value));
                 case "enrollmentNo" -> dto.setEnrollmentNo(value);
                 case "previousMarksheetUrl" -> dto.setPreviousMarksheetUrl(value);

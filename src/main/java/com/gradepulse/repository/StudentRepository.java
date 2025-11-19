@@ -27,8 +27,11 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     // Find by studentId
     Student findByStudentId(String studentId);
     
-    // Find students by admission class
+    // Find students by admission class (historical)
     List<Student> findByAdmissionClass(String admissionClass);
+    
+    // Find students by current class (for attendance marking)
+    List<Student> findByCurrentClass(String currentClass);
     
     // Analytics queries
     long countByGender(String gender);

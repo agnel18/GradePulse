@@ -20,6 +20,7 @@ public class StudentUploadDto {
     private String photoUrl;
     private String previousSchoolTcUrl;
     private String admissionClass;
+    private String currentClass;
     private LocalDate admissionDate;
     private String enrollmentNo;
     private String previousMarksheetUrl;

@@ -42,6 +42,9 @@ public class Student {
     @Column(name = "admission_class")
     private String admissionClass;
 
+    @Column(name = "current_class")
+    private String currentClass;
+
     @Column(name = "admission_date")
     private LocalDate admissionDate;
 
@@ -189,6 +192,9 @@ public class Student {
 
     public String getAdmissionClass() { return admissionClass; }
     public void setAdmissionClass(String admissionClass) { this.admissionClass = admissionClass; }
+
+    public String getCurrentClass() { return currentClass; }
+    public void setCurrentClass(String currentClass) { this.currentClass = currentClass; }
 
     public LocalDate getAdmissionDate() { return admissionDate; }
     public void setAdmissionDate(LocalDate admissionDate) { this.admissionDate = admissionDate; }

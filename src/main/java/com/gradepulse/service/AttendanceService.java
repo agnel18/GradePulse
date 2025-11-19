@@ -187,9 +187,9 @@ public class AttendanceService {
         ClassSection classSection = classSectionRepository.findById(classSectionId)
             .orElseThrow(() -> new IllegalArgumentException("Class section not found"));
 
-        // Get all students for this class
+        // Get all students for this class using current_class (not admission_class)
         String classKey = classSection.getClassName();
-        List<Student> students = studentRepository.findByAdmissionClass(classKey);
+        List<Student> students = studentRepository.findByCurrentClass(classKey);
 
         List<StudentAttendanceDto> result = new ArrayList<>();
         LocalDate today = LocalDate.now();

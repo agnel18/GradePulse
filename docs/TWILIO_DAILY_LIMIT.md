@@ -3,7 +3,7 @@
 ## Problem Summary
 When sending attendance alerts via WhatsApp, you encountered an error:
 ```
-Account AC33ebf72e074d5c9e3feef4d90d02e8de exceeded the 50 daily messages limit
+Account [TWILIO_ACCOUNT_SID] exceeded the 50 daily messages limit
 ```
 
 ## Root Cause

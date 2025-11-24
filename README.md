@@ -1,6 +1,6 @@
 # GradePulse — Free Forever Grade Tracker
 
-**"No school should pay ₹50,000/year to tell parents their child got 19/20"**
+**"No school should pay ₹50,000/year to tell parents their child is safe in school"**
 
 Live: (coming soon)  
 GitHub: https://github.com/agnel18/GradePulse
@@ -11,7 +11,7 @@ GitHub: https://github.com/agnel18/GradePulse
 
 | For Teachers | For Parents |
 |-------------|------------|
-| 2+ hours entering grades → **2 minutes with Excel** | No update → **WhatsApp in <3 seconds** |
+| 2+ hours entering grades → **2 minutes with Excel** | No update on child safety / attendance → **WhatsApp in <3 seconds** |
 | Manual attendance → **One tap, 500 parents notified** | No syllabus view → **Chapter-wise % on phone** |
 | No IT support → **Zero install, free hosting** | 50MB app → **Works on ₹2999 JioPhone** |
 

@@ -475,6 +475,10 @@ public class UploadController {
     // === 3. Confirm & Save ===
     @PostMapping("/upload/confirm")
     public String confirmUpload(@RequestParam Map<String, String> allParams, Model model) {
+        // Extract academic year (default to current academic year)
+        String academicYear = allParams.getOrDefault("academicYear", "2024-2025");
+        log.info("Processing upload for academic year: {}", academicYear);
+        
         // Parse the students[index].field format from form
         Map<Integer, StudentUploadDto> dtoMap = new HashMap<>();
         

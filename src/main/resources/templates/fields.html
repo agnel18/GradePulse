@@ -75,6 +75,31 @@
         .modal-header .btn-close {
             filter: brightness(0) invert(1);
         }
+        /* Modal form controls dark mode support */
+        .modal-content .form-control,
+        .modal-content .form-select {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+        .modal-content .form-control:focus,
+        .modal-content .form-select:focus {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+        }
+        .modal-content .form-label {
+            color: var(--text-primary);
+        }
+        .modal-content .form-check-label {
+            color: var(--text-primary);
+        }
+        .modal-content .alert-info {
+            background-color: rgba(102, 126, 234, 0.1);
+            border-color: rgba(102, 126, 234, 0.2);
+            color: var(--text-primary);
+        }
     </style>
 </head>
 <body>
@@ -180,9 +205,12 @@
                             <i class="fas fa-grip-vertical"></i>
                         </div>
                         <div class="flex-grow-1">
-                            <h5 class="card-title mb-1" th:text="${field.displayName}">Field Name</h5>
-                            <p class="text-muted small mb-2">
-                                <strong>Field Code:</strong> <code th:text="${field.fieldName}">field_name</code>
+                            <h5 class="card-title mb-1" 
+                                th:text="${field.displayName}"
+                                th:style="${field.active} ? '' : 'color: #999; text-decoration: line-through;'">Field Name</h5>
+                            <p class="small mb-2" style="color: var(--text-secondary);">
+                                <strong>Description:</strong>
+                                <span th:text="${(field.description != null and !#strings.isEmpty(field.description)) ? field.description : 'Description pending review.'}"></span>
                             </p>
                             <div class="d-flex gap-2 flex-wrap align-items-center">
                                 <span th:if="${field.fieldType} == 'STRING'" class="badge bg-primary badge-type">📝 Text</span>
@@ -221,7 +249,7 @@
 <!-- Add Field Modal -->
 <div class="modal fade" id="addFieldModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content" style="background-color: var(--bg-secondary); color: var(--text-primary);">
             <div class="modal-header">
                 <h5 class="modal-title">Add Custom Field</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -236,13 +264,13 @@
                         <label class="form-label"><strong>Field Name</strong> (for backend) *</label>
                         <input type="text" class="form-control" id="fieldName" required
                                placeholder="Example: grandfather_name" pattern="[a-z_]+">
-                        <small class="text-muted">Use lowercase and underscores (e.g., bus_route_number)</small>
+                        <small style="color: var(--text-secondary);">Use lowercase and underscores (e.g., bus_route_number)</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label"><strong>Display Name</strong> (for Excel & screens) *</label>
                         <input type="text" class="form-control" id="displayName" required
                                placeholder="Example: Grandfather's Name">
-                        <small class="text-muted">This friendly name appears in Excel headers and on all screens</small>
+                        <small style="color: var(--text-secondary);">This friendly name appears in Excel headers and on all screens</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label"><strong>Field Type</strong> *</label>
@@ -253,6 +281,12 @@
                             <option value="BOOLEAN">Yes/No</option>
                             <option value="FILE_URL">File Link</option>
                         </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Description</strong></label>
+                        <textarea class="form-control" id="description" rows="3" 
+                                  placeholder="Describe what this field is used for..."></textarea>
+                        <small style="color: var(--text-secondary);">Help text that explains the purpose of this field</small>
                     </div>
                     <div class="mb-3 form-check">
                         <input type="checkbox" class="form-check-input" id="required">
@@ -296,6 +330,7 @@
             fieldName: document.getElementById('fieldName').value,
             displayName: document.getElementById('displayName').value,
             fieldType: document.getElementById('fieldType').value,
+            description: document.getElementById('description').value,
             required: document.getElementById('required').checked,
             active: document.getElementById('active').checked
         };
@@ -445,7 +480,35 @@
             });
         });
     });
+
+    // Theme Toggle Function
+    function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        
+        const icon = document.getElementById('themeIcon');
+        if (newTheme === 'dark') {
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+        } else {
+            icon.classList.remove('fa-sun');
+            icon.classList.add('fa-moon');
+        }
+    }
+
+    // Load saved theme on page load
+    (function() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        const icon = document.getElementById('themeIcon');
+        if (savedTheme === 'dark' && icon) {
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+        }
+    })();
 </script>
-<script th:src="@{/js/dashboard.js}"></script>
 </body>
 </html>

@@ -66,9 +66,9 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <button class="btn btn-link nav-link" onclick="toggleTheme()">
-                            <i class="fas fa-moon" id="theme-icon"></i>
-                        </button>
+                        <span class="theme-toggle" onclick="toggleTheme()" style="cursor: pointer; font-size: 1.2rem; padding: 0.5rem; border-radius: 8px; transition: all 0.3s; color: white;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'" title="Toggle Dark Mode">
+                            <i class="fas fa-moon" id="themeIcon"></i>
+                        </span>
                     </li>
                 </ul>
             </div>
@@ -240,6 +240,35 @@
                     sectionSelect.disabled = false;
                 });
         });
+
+        // Theme Toggle Function
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const icon = document.getElementById('themeIcon');
+            if (newTheme === 'dark') {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        }
+
+        // Load saved theme on page load
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const icon = document.getElementById('themeIcon');
+            if (savedTheme === 'dark' && icon) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+        })();
     </script>
 </body>
 </html>

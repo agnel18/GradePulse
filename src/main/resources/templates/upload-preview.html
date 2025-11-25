@@ -108,7 +108,12 @@
 </head>
 <body>
 <div class="container mt-4">
-    <h2>Preview & Edit (<span th:text="${validCount}"></span> valid of <span th:text="${totalImported}"></span>)</h2>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Preview & Edit (<span th:text="${validCount}"></span> valid of <span th:text="${totalImported}"></span>)</h2>
+        <span class="theme-toggle" onclick="toggleTheme()" style="cursor: pointer; font-size: 1.5rem; padding: 0.5rem; border-radius: 8px; transition: all 0.3s; color: var(--text-primary);" onmouseover="this.style.backgroundColor='var(--bg-primary)'" onmouseout="this.style.backgroundColor='transparent'" title="Toggle Dark Mode">
+            <i class="fas fa-moon" id="themeIcon"></i>
+        </span>
+    </div>
     <div class="alert alert-info" id="changesAlert" style="display:none;">
         <i class="fas fa-info-circle"></i> <strong>Changes Detected:</strong> Yellow highlighted fields have changed values.
         <button type="button" class="btn btn-sm btn-primary ms-3" onclick="keepAllChanges()">
@@ -123,40 +128,69 @@
             <table class="table table-bordered table-sm">
                 <thead class="table-light">
                 <tr>
-                    <th>Student ID</th><th>Full Name</th><th>DOB</th><th>Gender</th><th>APAAR ID</th><th>Aadhaar</th><th>Category</th><th>Address</th>
-                    <th>Photo</th><th>TC</th><th>Adm Class</th><th>Adm Date</th><th>Enroll No</th><th>Marksheet</th>
-                    <th>Blood</th><th>Allergies</th><th>Immunized</th><th>Height</th><th>Weight</th><th>Vision</th>
-                    <th>Char Cert</th><th>Fee</th><th>Attend %</th><th>UDISE</th>
-                    <th>Father</th><th>F. Contact</th><th>F. Aadhaar</th>
-                    <th>Mother</th><th>M. Contact</th><th>M. Aadhaar</th>
-                    <th>Guardian</th><th>G. Contact</th><th>G. Relation</th><th>G. Aadhaar</th>
-                    <th>Family</th><th>Lang</th>
+                    <th th:if="${activeFieldNames.contains('student_id')}">Student ID</th>
+                    <th th:if="${activeFieldNames.contains('full_name')}">Full Name</th>
+                    <th th:if="${activeFieldNames.contains('date_of_birth')}">DOB</th>
+                    <th th:if="${activeFieldNames.contains('gender')}">Gender</th>
+                    <th th:if="${activeFieldNames.contains('apaar_id')}">APAAR ID</th>
+                    <th th:if="${activeFieldNames.contains('aadhaar_number')}">Aadhaar</th>
+                    <th th:if="${activeFieldNames.contains('category')}">Category</th>
+                    <th th:if="${activeFieldNames.contains('address')}">Address</th>
+                    <th th:if="${activeFieldNames.contains('photo_url')}">Photo</th>
+                    <th th:if="${activeFieldNames.contains('previous_school_tc_url')}">TC</th>
+                    <th th:if="${activeFieldNames.contains('admission_class')}">Adm Class</th>
+                    <th th:if="${activeFieldNames.contains('admission_date')}">Adm Date</th>
+                    <th th:if="${activeFieldNames.contains('enrollment_no')}">Enroll No</th>
+                    <th th:if="${activeFieldNames.contains('previous_marksheet_url')}">Marksheet</th>
+                    <th th:if="${activeFieldNames.contains('blood_group')}">Blood</th>
+                    <th th:if="${activeFieldNames.contains('allergies_conditions')}">Allergies</th>
+                    <th th:if="${activeFieldNames.contains('immunization')}">Immunized</th>
+                    <th th:if="${activeFieldNames.contains('height_cm')}">Height</th>
+                    <th th:if="${activeFieldNames.contains('weight_kg')}">Weight</th>
+                    <th th:if="${activeFieldNames.contains('vision_check')}">Vision</th>
+                    <th th:if="${activeFieldNames.contains('character_cert_url')}">Char Cert</th>
+                    <th th:if="${activeFieldNames.contains('fee_status')}">Fee</th>
+                    <th th:if="${activeFieldNames.contains('attendance_percent')}">Attend %</th>
+                    <th th:if="${activeFieldNames.contains('udise_uploaded')}">UDISE</th>
+                    <th th:if="${activeFieldNames.contains('father_name')}">Father</th>
+                    <th th:if="${activeFieldNames.contains('father_contact')}">F. Contact</th>
+                    <th th:if="${activeFieldNames.contains('father_aadhaar')}">F. Aadhaar</th>
+                    <th th:if="${activeFieldNames.contains('mother_name')}">Mother</th>
+                    <th th:if="${activeFieldNames.contains('mother_contact')}">M. Contact</th>
+                    <th th:if="${activeFieldNames.contains('mother_aadhaar')}">M. Aadhaar</th>
+                    <th th:if="${activeFieldNames.contains('guardian_name')}">Guardian</th>
+                    <th th:if="${activeFieldNames.contains('guardian_contact')}">G. Contact</th>
+                    <th th:if="${activeFieldNames.contains('guardian_relation')}">G. Relation</th>
+                    <th th:if="${activeFieldNames.contains('guardian_aadhaar')}">G. Aadhaar</th>
+                    <th th:if="${activeFieldNames.contains('family_status')}">Family</th>
+                    <th th:if="${activeFieldNames.contains('language_preference')}">Lang</th>
                     <th>Status</th><th>Errors</th><th>Remove</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="s, iter : ${students}" th:class="${!s.valid} ? 'table-danger' : ''" th:attr="data-has-changes=${!s.changedFields.isEmpty()}">
-                    <td th:class="${s.changedFields['studentId']} ? 'changed-field' : ''">
+                    <!-- Dynamic cells matching header order -->
+                    <td th:if="${activeFieldNames.contains('student_id')}" th:class="${s.changedFields['studentId']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].studentId|" th:value="${s.studentId}" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['studentId']}" class="old-value">
                             Old: <span th:text="${s.oldValues['studentId']}"></span>
                             <input type="hidden" th:name="|students[${iter.index}].old_studentId|" th:value="${s.oldValues['studentId']}"/>
                         </div>
                     </td>
-                    <td th:class="${s.changedFields['fullName']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('full_name')}" th:class="${s.changedFields['fullName']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].fullName|" th:value="${s.fullName}" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['fullName']}" class="old-value">
                             Old: <span th:text="${s.oldValues['fullName']}"></span>
                             <input type="hidden" th:name="|students[${iter.index}].old_fullName|" th:value="${s.oldValues['fullName']}"/>
                         </div>
                     </td>
-                    <td th:class="${s.changedFields['dateOfBirth']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('date_of_birth')}" th:class="${s.changedFields['dateOfBirth']} ? 'changed-field' : ''">
                         <input type="date" th:name="|students[${iter.index}].dateOfBirth|" th:value="${s.dateOfBirth}" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['dateOfBirth']}" class="old-value">
                             Old: <span th:text="${s.oldValues['dateOfBirth']}"></span>
                         </div>
                     </td>
-                    <td th:class="${s.changedFields['gender']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('gender')}" th:class="${s.changedFields['gender']} ? 'changed-field' : ''">
                         <select th:name="|students[${iter.index}].gender|" th:classappend="${s.changedFields['gender']} ? ' changed-field' : ''" class="form-control form-control-sm" required>
                             <option value="">Select</option>
                             <option th:value="'Male'" th:selected="${s.gender == 'Male'}">Male</option>
@@ -165,134 +199,135 @@
                         </select>
                         <div th:if="${s.changedFields['gender'] != null and s.changedFields['gender'] and s.oldValues['gender'] != null and !#strings.isEmpty(s.oldValues['gender'])}" class="old-value">Old: <span th:text="${s.oldValues['gender']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['apaarId']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('apaar_id')}" th:class="${s.changedFields['apaarId']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].apaarId|" th:value="${s.apaarId}" th:classappend="${s.changedFields['apaarId']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['apaarId']}" class="old-value">Old: <span th:text="${s.oldValues['apaarId']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['aadhaarNumber']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('aadhaar_number')}" th:class="${s.changedFields['aadhaarNumber']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].aadhaarNumber|" th:value="${s.aadhaarNumber}" th:classappend="${s.changedFields['aadhaarNumber']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="[0-9]{12}" title="Aadhaar must be exactly 12 digits" maxlength="12"/>
                         <div th:if="${s.changedFields['aadhaarNumber'] != null and s.changedFields['aadhaarNumber'] and s.oldValues['aadhaarNumber'] != null and !#strings.isEmpty(s.oldValues['aadhaarNumber'])}" class="old-value">Old: <span th:text="${s.oldValues['aadhaarNumber']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['category']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('category')}" th:class="${s.changedFields['category']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].category|" th:value="${s.category}" th:classappend="${s.changedFields['category']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['category']}" class="old-value">Old: <span th:text="${s.oldValues['category']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['address']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('address')}" th:class="${s.changedFields['address']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].address|" th:value="${s.address}" th:classappend="${s.changedFields['address']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['address']}" class="old-value">Old: <span th:text="${s.oldValues['address']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['photoUrl']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('photo_url')}" th:class="${s.changedFields['photoUrl']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].photoUrl|" th:value="${s.photoUrl}" th:classappend="${s.changedFields['photoUrl']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['photoUrl']}" class="old-value">Old: <span th:text="${s.oldValues['photoUrl']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['previousSchoolTcUrl']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('previous_school_tc_url')}" th:class="${s.changedFields['previousSchoolTcUrl']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].previousSchoolTcUrl|" th:value="${s.previousSchoolTcUrl}" th:classappend="${s.changedFields['previousSchoolTcUrl']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['previousSchoolTcUrl']}" class="old-value">Old: <span th:text="${s.oldValues['previousSchoolTcUrl']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['admissionClass']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('admission_class')}" th:class="${s.changedFields['admissionClass']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].admissionClass|" th:value="${s.admissionClass}" th:classappend="${s.changedFields['admissionClass']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['admissionClass']}" class="old-value">Old: <span th:text="${s.oldValues['admissionClass']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['admissionDate']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('admission_date')}" th:class="${s.changedFields['admissionDate']} ? 'changed-field' : ''">
                         <input type="date" th:name="|students[${iter.index}].admissionDate|" th:value="${s.admissionDate}" th:classappend="${s.changedFields['admissionDate']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['admissionDate']}" class="old-value">Old: <span th:text="${s.oldValues['admissionDate']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['enrollmentNo']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('enrollment_no')}" th:class="${s.changedFields['enrollmentNo']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].enrollmentNo|" th:value="${s.enrollmentNo}" th:classappend="${s.changedFields['enrollmentNo']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['enrollmentNo']}" class="old-value">Old: <span th:text="${s.oldValues['enrollmentNo']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['previousMarksheetUrl']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('previous_marksheet_url')}" th:class="${s.changedFields['previousMarksheetUrl']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].previousMarksheetUrl|" th:value="${s.previousMarksheetUrl}" th:classappend="${s.changedFields['previousMarksheetUrl']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['previousMarksheetUrl']}" class="old-value">Old: <span th:text="${s.oldValues['previousMarksheetUrl']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['bloodGroup']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('blood_group')}" th:class="${s.changedFields['bloodGroup']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].bloodGroup|" th:value="${s.bloodGroup}" th:classappend="${s.changedFields['bloodGroup']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['bloodGroup']}" class="old-value">Old: <span th:text="${s.oldValues['bloodGroup']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['allergiesConditions']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('allergies_conditions')}" th:class="${s.changedFields['allergiesConditions']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].allergiesConditions|" th:value="${s.allergiesConditions}" th:classappend="${s.changedFields['allergiesConditions']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['allergiesConditions']}" class="old-value">Old: <span th:text="${s.oldValues['allergiesConditions']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['immunization']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('immunization')}" th:class="${s.changedFields['immunization']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].immunization|" th:value="${s.immunization}" th:classappend="${s.changedFields['immunization']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['immunization']}" class="old-value">Old: <span th:text="${s.oldValues['immunization']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['heightCm']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('height_cm')}" th:class="${s.changedFields['heightCm']} ? 'changed-field' : ''">
                         <input type="number" th:name="|students[${iter.index}].heightCm|" th:value="${s.heightCm}" th:classappend="${s.changedFields['heightCm']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['heightCm']}" class="old-value">Old: <span th:text="${s.oldValues['heightCm']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['weightKg']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('weight_kg')}" th:class="${s.changedFields['weightKg']} ? 'changed-field' : ''">
                         <input type="number" th:name="|students[${iter.index}].weightKg|" th:value="${s.weightKg}" th:classappend="${s.changedFields['weightKg']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['weightKg']}" class="old-value">Old: <span th:text="${s.oldValues['weightKg']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['visionCheck']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('vision_check')}" th:class="${s.changedFields['visionCheck']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].visionCheck|" th:value="${s.visionCheck}" th:classappend="${s.changedFields['visionCheck']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['visionCheck']}" class="old-value">Old: <span th:text="${s.oldValues['visionCheck']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['characterCertUrl']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('character_cert_url')}" th:class="${s.changedFields['characterCertUrl']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].characterCertUrl|" th:value="${s.characterCertUrl}" th:classappend="${s.changedFields['characterCertUrl']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['characterCertUrl']}" class="old-value">Old: <span th:text="${s.oldValues['characterCertUrl']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['feeStatus']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('fee_status')}" th:class="${s.changedFields['feeStatus']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].feeStatus|" th:value="${s.feeStatus}" th:classappend="${s.changedFields['feeStatus']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['feeStatus']}" class="old-value">Old: <span th:text="${s.oldValues['feeStatus']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['attendancePercent']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('attendance_percent')}" th:class="${s.changedFields['attendancePercent']} ? 'changed-field' : ''">
                         <input type="number" step="0.01" th:name="|students[${iter.index}].attendancePercent|" th:value="${s.attendancePercent}" th:classappend="${s.changedFields['attendancePercent']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['attendancePercent']}" class="old-value">Old: <span th:text="${s.oldValues['attendancePercent']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['udiseUploaded']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('udise_uploaded')}" th:class="${s.changedFields['udiseUploaded']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].udiseUploaded|" th:value="${s.udiseUploaded}" th:classappend="${s.changedFields['udiseUploaded']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['udiseUploaded']}" class="old-value">Old: <span th:text="${s.oldValues['udiseUploaded']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['fatherName']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('father_name')}" th:class="${s.changedFields['fatherName']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].fatherName|" th:value="${s.fatherName}" th:classappend="${s.changedFields['fatherName']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['fatherName']}" class="old-value">Old: <span th:text="${s.oldValues['fatherName']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['fatherContact']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('father_contact')}" th:class="${s.changedFields['fatherContact']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].fatherContact|" th:value="${s.fatherContact}" th:classappend="${s.changedFields['fatherContact']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="^\+\d{10,15}$" title="International format: +971508714823 or +919876543210" maxlength="16"/>
                         <div th:if="${s.changedFields['fatherContact'] != null and s.changedFields['fatherContact'] and s.oldValues['fatherContact'] != null and !#strings.isEmpty(s.oldValues['fatherContact'])}" class="old-value">Old: <span th:text="${s.oldValues['fatherContact']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['fatherAadhaar']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('father_aadhaar')}" th:class="${s.changedFields['fatherAadhaar']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].fatherAadhaar|" th:value="${s.fatherAadhaar}" th:classappend="${s.changedFields['fatherAadhaar']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="[0-9]{12}" title="Aadhaar must be exactly 12 digits" maxlength="12"/>
                         <div th:if="${s.changedFields['fatherAadhaar'] != null and s.changedFields['fatherAadhaar'] and s.oldValues['fatherAadhaar'] != null and !#strings.isEmpty(s.oldValues['fatherAadhaar'])}" class="old-value">Old: <span th:text="${s.oldValues['fatherAadhaar']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['motherName']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('mother_name')}" th:class="${s.changedFields['motherName']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].motherName|" th:value="${s.motherName}" th:classappend="${s.changedFields['motherName']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['motherName']}" class="old-value">Old: <span th:text="${s.oldValues['motherName']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['motherContact']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('mother_contact')}" th:class="${s.changedFields['motherContact']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].motherContact|" th:value="${s.motherContact}" th:classappend="${s.changedFields['motherContact']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="^\+\d{10,15}$" title="International format: +971508714823 or +919876543210" maxlength="16"/>
                         <div th:if="${s.changedFields['motherContact'] != null and s.changedFields['motherContact'] and s.oldValues['motherContact'] != null and !#strings.isEmpty(s.oldValues['motherContact'])}" class="old-value">Old: <span th:text="${s.oldValues['motherContact']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['motherAadhaar']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('mother_aadhaar')}" th:class="${s.changedFields['motherAadhaar']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].motherAadhaar|" th:value="${s.motherAadhaar}" th:classappend="${s.changedFields['motherAadhaar']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="[0-9]{12}" title="Aadhaar must be exactly 12 digits" maxlength="12"/>
                         <div th:if="${s.changedFields['motherAadhaar'] != null and s.changedFields['motherAadhaar'] and s.oldValues['motherAadhaar'] != null and !#strings.isEmpty(s.oldValues['motherAadhaar'])}" class="old-value">Old: <span th:text="${s.oldValues['motherAadhaar']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['guardianName']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('guardian_name')}" th:class="${s.changedFields['guardianName']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].guardianName|" th:value="${s.guardianName}" th:classappend="${s.changedFields['guardianName']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['guardianName'] != null and s.changedFields['guardianName'] and s.oldValues['guardianName'] != null and !#strings.isEmpty(s.oldValues['guardianName'])}" class="old-value">Old: <span th:text="${s.oldValues['guardianName']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['guardianContact']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('guardian_contact')}" th:class="${s.changedFields['guardianContact']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].guardianContact|" th:value="${s.guardianContact}" th:classappend="${s.changedFields['guardianContact']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="^\+\d{10,15}$" title="International format: +971508714823 or +919876543210" maxlength="16"/>
                         <div th:if="${s.changedFields['guardianContact'] != null and s.changedFields['guardianContact'] and s.oldValues['guardianContact'] != null and !#strings.isEmpty(s.oldValues['guardianContact'])}" class="old-value">Old: <span th:text="${s.oldValues['guardianContact']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['guardianRelation']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('guardian_relation')}" th:class="${s.changedFields['guardianRelation']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].guardianRelation|" th:value="${s.guardianRelation}" th:classappend="${s.changedFields['guardianRelation']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['guardianRelation'] != null and s.changedFields['guardianRelation'] and s.oldValues['guardianRelation'] != null and !#strings.isEmpty(s.oldValues['guardianRelation'])}" class="old-value">Old: <span th:text="${s.oldValues['guardianRelation']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['guardianAadhaar']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('guardian_aadhaar')}" th:class="${s.changedFields['guardianAadhaar']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].guardianAadhaar|" th:value="${s.guardianAadhaar}" th:classappend="${s.changedFields['guardianAadhaar']} ? ' changed-field' : ''" class="form-control form-control-sm" pattern="[0-9]{12}" title="Aadhaar must be exactly 12 digits" maxlength="12"/>
                         <div th:if="${s.changedFields['guardianAadhaar'] != null and s.changedFields['guardianAadhaar'] and s.oldValues['guardianAadhaar'] != null and !#strings.isEmpty(s.oldValues['guardianAadhaar'])}" class="old-value">Old: <span th:text="${s.oldValues['guardianAadhaar']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['familyStatus']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('family_status')}" th:class="${s.changedFields['familyStatus']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].familyStatus|" th:value="${s.familyStatus}" th:classappend="${s.changedFields['familyStatus']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['familyStatus']}" class="old-value">Old: <span th:text="${s.oldValues['familyStatus']}"></span></div>
                     </td>
-                    <td th:class="${s.changedFields['languagePreference']} ? 'changed-field' : ''">
+                    <td th:if="${activeFieldNames.contains('language_preference')}" th:class="${s.changedFields['languagePreference']} ? 'changed-field' : ''">
                         <input th:name="|students[${iter.index}].languagePreference|" th:value="${s.languagePreference}" th:classappend="${s.changedFields['languagePreference']} ? ' changed-field' : ''" class="form-control form-control-sm"/>
                         <div th:if="${s.changedFields['languagePreference']}" class="old-value">Old: <span th:text="${s.oldValues['languagePreference']}"></span></div>
                     </td>
+                    <!-- Status / Errors / Remove -->
                     <td><span th:text="${s.valid} ? 'Valid' : 'Invalid'" class="badge" th:class="${s.valid} ? 'bg-success' : 'bg-danger'"></span></td>
                     <td><div th:each="e : ${s.errors}" class="error" th:text="${e}"></div></td>
                     <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove()">X</button></td>
@@ -300,7 +335,14 @@
                 </tbody>
             </table>
         </div>
-        <button type="submit" class="btn btn-success btn-lg">Confirm & Save</button>
+        <div class="d-flex gap-3 mt-3">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-check me-2"></i>Confirm & Save
+            </button>
+            <a href="/upload" class="btn btn-danger btn-lg">
+                <i class="fas fa-times me-2"></i>Cancel
+            </a>
+        </div>
     </form>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -331,6 +373,35 @@
         });
         alert('All changes reverted to original values. Review and click "Confirm & Save" when ready.');
     }
+
+    // Theme Toggle Function
+    function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        
+        const icon = document.getElementById('themeIcon');
+        if (newTheme === 'dark') {
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+        } else {
+            icon.classList.remove('fa-sun');
+            icon.classList.add('fa-moon');
+        }
+    }
+
+    // Load saved theme on page load
+    (function() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        const icon = document.getElementById('themeIcon');
+        if (savedTheme === 'dark' && icon) {
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+        }
+    })();
 </script>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 <script th:src="@{/js/dashboard.js}"></script>

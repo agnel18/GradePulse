@@ -1,0 +1,40 @@
+-- Add description column to field_config table
+ALTER TABLE field_config ADD COLUMN description VARCHAR(500);
+
+-- Update existing core fields with meaningful descriptions
+UPDATE field_config SET description = 'Unique alphanumeric identifier assigned to each student (e.g., STU001, 2024-A-001). This ID is used across all school systems.' WHERE field_name = 'studentId';
+UPDATE field_config SET description = 'Complete legal name of the student as per official documents. Include first name, middle name, and last name.' WHERE field_name = 'fullName';
+UPDATE field_config SET description = 'Student biological gender or gender identity. Standard values: Male, Female, Other, Prefer not to say.' WHERE field_name = 'gender';
+UPDATE field_config SET description = 'Student date of birth in DD/MM/YYYY format (e.g., 15/08/2010). Used for age calculation and eligibility verification.' WHERE field_name = 'dateOfBirth';
+UPDATE field_config SET description = 'Blood type and Rh factor (e.g., A+, B+, O+, AB+, A-, B-, O-, AB-). Critical for medical emergencies.' WHERE field_name = 'bloodGroup';
+UPDATE field_config SET description = 'Primary contact number of parent or guardian with country code. Used for attendance alerts and emergency notifications (e.g., +91 9876543210).' WHERE field_name = 'phoneNumber';
+UPDATE field_config SET description = 'Email address of parent or guardian for official communications, report cards, and important announcements.' WHERE field_name = 'email';
+UPDATE field_config SET description = 'Complete residential address including house/flat number, street name, locality. Used for correspondence and emergency contact.' WHERE field_name = 'address';
+UPDATE field_config SET description = 'Name of city or town where student currently resides. Used for local area demographics and transportation planning.' WHERE field_name = 'city';
+UPDATE field_config SET description = 'State or province of current residence. Important for inter-state transfer procedures and regional reporting.' WHERE field_name = 'state';
+UPDATE field_config SET description = 'Postal code or PIN code of residential area. Used for address verification and zoning purposes.' WHERE field_name = 'pinCode';
+UPDATE field_config SET description = 'Country of residence. Required for international students and foreign nationals.' WHERE field_name = 'country';
+UPDATE field_config SET description = 'Full name of father or legal male guardian. Include title (Mr.) and complete name as per identity documents.' WHERE field_name = 'fatherName';
+UPDATE field_config SET description = 'Professional occupation or job title of father/guardian (e.g., Software Engineer, Business Owner, Doctor).' WHERE field_name = 'fatherOccupation';
+UPDATE field_config SET description = 'Direct contact number of father/guardian. Alternative number for parent communication and emergencies.' WHERE field_name = 'fatherPhone';
+UPDATE field_config SET description = 'Full name of mother or legal female guardian. Include title (Mrs./Ms.) and complete name as per identity documents.' WHERE field_name = 'motherName';
+UPDATE field_config SET description = 'Professional occupation or job title of mother/guardian (e.g., Teacher, Homemaker, Engineer).' WHERE field_name = 'motherOccupation';
+UPDATE field_config SET description = 'Direct contact number of mother/guardian. Alternative number for parent communication and emergencies.' WHERE field_name = 'motherPhone';
+UPDATE field_config SET description = 'Full name of emergency contact person who can be reached if parents are unavailable (e.g., grandparent, uncle, family friend).' WHERE field_name = 'emergencyContactName';
+UPDATE field_config SET description = 'Phone number of emergency contact person. Must be reachable 24/7 in case of urgent situations when parents cannot be contacted.' WHERE field_name = 'emergencyContactPhone';
+UPDATE field_config SET description = 'Relationship of emergency contact to student (e.g., Grandfather, Uncle, Aunt, Family Friend, Neighbor).' WHERE field_name = 'emergencyContactRelation';
+UPDATE field_config SET description = 'Name of school or institution previously attended by the student. Required for transfer certificate verification.' WHERE field_name = 'previousSchool';
+UPDATE field_config SET description = 'Academic year when student was first admitted to this school (e.g., 2020-21, 2023-24). Used for tenure calculation.' WHERE field_name = 'admissionYear';
+UPDATE field_config SET description = 'Exact date of admission to current school in DD/MM/YYYY format. Used for fee calculation and academic records.' WHERE field_name = 'admissionDate';
+UPDATE field_config SET description = 'Current height of student in centimeters (e.g., 145 cm). Measured during annual health checkups to track physical growth.' WHERE field_name = 'height';
+UPDATE field_config SET description = 'Current weight of student in kilograms (e.g., 42.5 kg). Monitored during health checkups to ensure healthy growth patterns.' WHERE field_name = 'weight';
+UPDATE field_config SET description = 'Vaccination records and immunization status. List completed vaccines (e.g., BCG, DPT, MMR, Polio) with dates if available.' WHERE field_name = 'immunizationStatus';
+UPDATE field_config SET description = 'Known medical conditions, chronic illnesses, allergies, or special health needs (e.g., Asthma, Diabetes, Peanut allergy). Critical for school medical staff.' WHERE field_name = 'medicalConditions';
+UPDATE field_config SET description = 'Cloud storage URL or file path to student passport-size photograph. Used for ID cards, reports, and official documents.' WHERE field_name = 'photoUrl';
+UPDATE field_config SET description = 'Document link to birth certificate scan or photo. Required for age verification and official school records.' WHERE field_name = 'birthCertificateUrl';
+UPDATE field_config SET description = 'Link to Aadhar card document (front and back). Mandatory government ID for Indian students, used for scholarships and benefits.' WHERE field_name = 'aadharCardUrl';
+UPDATE field_config SET description = 'Transfer certificate from previous school. Required document showing student formally left their previous institution.' WHERE field_name = 'transferCertificateUrl';
+UPDATE field_config SET description = 'Previous year marksheet or report card. Shows academic performance from last attended school/class.' WHERE field_name = 'marksheetUrl';
+UPDATE field_config SET description = 'Additional notes, special instructions, behavioral observations, or important information about the student that staff should be aware of.' WHERE field_name = 'remarks';
+UPDATE field_config SET description = 'Current academic class/grade assigned to the student (e.g., 5th Standard, Class 10-A). Updated annually during promotion.' WHERE field_name = 'currentClass';
+UPDATE field_config SET description = 'Date when student was assigned to their current class in DD/MM/YYYY format. Tracks class assignment history and promotions.' WHERE field_name = 'classAssignmentDate';

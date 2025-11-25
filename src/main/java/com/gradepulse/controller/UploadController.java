@@ -20,10 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 public class UploadController {
@@ -178,6 +176,56 @@ public class UploadController {
         model.addAttribute("students", previewList);
         model.addAttribute("totalImported", previewList.size());
         model.addAttribute("validCount", previewList.stream().filter(StudentUploadDto::isValid).count());
+        
+        // Pass active fields to preview page for dynamic column rendering
+        List<FieldConfig> activeFields = fieldConfigRepository.findByActiveOrderBySortOrderAsc(true);
+        model.addAttribute("activeFields", activeFields);
+        
+        // Create a set of active field names for easy checking in template
+        Set<String> activeFieldNames = activeFields.stream()
+            .map(FieldConfig::getFieldName)
+            .collect(Collectors.toSet());
+        model.addAttribute("activeFieldNames", activeFieldNames);
+        
+        // Map field names (snake_case DB) to DTO property names (camelCase)
+        Map<String, String> fieldToPropMap = new HashMap<>();
+        fieldToPropMap.put("student_id", "studentId");
+        fieldToPropMap.put("full_name", "fullName");
+        fieldToPropMap.put("date_of_birth", "dateOfBirth");
+        fieldToPropMap.put("gender", "gender");
+        fieldToPropMap.put("apaar_id", "apaarId");
+        fieldToPropMap.put("aadhaar_number", "aadhaarNumber");
+        fieldToPropMap.put("category", "category");
+        fieldToPropMap.put("address", "address");
+        fieldToPropMap.put("photo_url", "photoUrl");
+        fieldToPropMap.put("previous_school_tc_url", "previousSchoolTcUrl");
+        fieldToPropMap.put("admission_class", "admissionClass");
+        fieldToPropMap.put("admission_date", "admissionDate");
+        fieldToPropMap.put("enrollment_no", "enrollmentNo");
+        fieldToPropMap.put("previous_marksheet_url", "previousMarksheetUrl");
+        fieldToPropMap.put("blood_group", "bloodGroup");
+        fieldToPropMap.put("allergies_conditions", "allergiesConditions");
+        fieldToPropMap.put("immunization", "immunization");
+        fieldToPropMap.put("height_cm", "heightCm");
+        fieldToPropMap.put("weight_kg", "weightKg");
+        fieldToPropMap.put("vision_check", "visionCheck");
+        fieldToPropMap.put("character_cert_url", "characterCertUrl");
+        fieldToPropMap.put("fee_status", "feeStatus");
+        fieldToPropMap.put("attendance_percent", "attendancePercent");
+        fieldToPropMap.put("udise_uploaded", "udiseUploaded");
+        fieldToPropMap.put("father_name", "fatherName");
+        fieldToPropMap.put("father_contact", "fatherContact");
+        fieldToPropMap.put("father_aadhaar", "fatherAadhaar");
+        fieldToPropMap.put("mother_name", "motherName");
+        fieldToPropMap.put("mother_contact", "motherContact");
+        fieldToPropMap.put("mother_aadhaar", "motherAadhaar");
+        fieldToPropMap.put("guardian_name", "guardianName");
+        fieldToPropMap.put("guardian_contact", "guardianContact");
+        fieldToPropMap.put("guardian_relation", "guardianRelation");
+        fieldToPropMap.put("guardian_aadhaar", "guardianAadhaar");
+        fieldToPropMap.put("family_status", "familyStatus");
+        fieldToPropMap.put("language_preference", "languagePreference");
+        model.addAttribute("fieldToPropMap", fieldToPropMap);
 
         log.info("Preview ready: {} total, {} valid", previewList.size(), model.getAttribute("validCount"));
         

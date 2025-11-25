@@ -19,6 +19,9 @@ public class FieldConfig {
     @Column(nullable = false)
     private String fieldType;          // STRING, NUMBER, DATE, BOOLEAN, FILE_URL
 
+    @Column(length = 500)
+    private String description;         // Custom description for the field
+
     private Boolean required = false;
     private Boolean active = true;
     private Integer sortOrder = 0;

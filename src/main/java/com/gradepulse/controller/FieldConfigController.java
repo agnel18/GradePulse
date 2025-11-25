@@ -31,6 +31,14 @@ public class FieldConfigController {
     public String listFields(Model model) {
         List<FieldConfig> fields = fieldConfigRepository.findAllByOrderBySortOrderAsc();
         
+        // Sort: active fields first, then disabled fields at bottom
+        fields.sort((f1, f2) -> {
+            if (f1.getActive() == f2.getActive()) {
+                return f1.getSortOrder().compareTo(f2.getSortOrder());
+            }
+            return f1.getActive() ? -1 : 1;
+        });
+        
         // Fix display names if they haven't been updated yet
         fields.stream()
             .filter(f -> "previous_school_tc_url".equals(f.getFieldName()) && "TC".equals(f.getDisplayName()))

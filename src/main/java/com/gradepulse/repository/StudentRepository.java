@@ -1,5 +1,6 @@
 package com.gradepulse.repository;
 
+import com.gradepulse.model.ClassSection;
 import com.gradepulse.model.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -30,8 +31,14 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     // Find students by admission class (historical)
     List<Student> findByAdmissionClass(String admissionClass);
     
-    // Find students by current class (for attendance marking)
+    // Find students by current class (for attendance marking - legacy)
     List<Student> findByCurrentClass(String currentClass);
+    
+    // NEW: Find students by ClassSection FK (primary query for attendance)
+    List<Student> findByClassSection(ClassSection classSection);
+    
+    // NEW: Find specific students in a class section (for batch operations)
+    List<Student> findByClassSectionAndIdIn(ClassSection classSection, List<Long> ids);
     
     // Analytics queries
     long countByGender(String gender);

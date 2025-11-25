@@ -187,9 +187,21 @@ public class AttendanceService {
         ClassSection classSection = classSectionRepository.findById(classSectionId)
             .orElseThrow(() -> new IllegalArgumentException("Class section not found"));
 
-        // Get all students for this class using current_class (not admission_class)
-        String classKey = classSection.getClassName();
-        List<Student> students = studentRepository.findByCurrentClass(classKey);
+        // INTEGRATION FIX: Use FK relationship for primary query
+        List<Student> students = studentRepository.findByClassSection(classSection);
+        
+        // Backward compatibility fallback: Try legacy string-based query if no results
+        if (students.isEmpty()) {
+            log.warn("No students found via FK for ClassSection ID {}. Trying legacy currentClass match for: {}", 
+                     classSectionId, classSection.getFullName());
+            students = studentRepository.findByCurrentClass(classSection.getFullName());
+            
+            // Also try simplified class name as last resort
+            if (students.isEmpty()) {
+                log.warn("No students via fullName. Trying className: {}", classSection.getClassName());
+                students = studentRepository.findByCurrentClass(classSection.getClassName());
+            }
+        }
 
         List<StudentAttendanceDto> result = new ArrayList<>();
         LocalDate today = LocalDate.now();

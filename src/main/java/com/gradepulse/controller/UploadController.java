@@ -2,10 +2,12 @@ package com.gradepulse.controller;
 
 import com.google.gson.Gson;
 import com.gradepulse.dto.StudentUploadDto;
+import com.gradepulse.model.ClassSection;
 import com.gradepulse.model.FieldConfig;
 import com.gradepulse.model.Student;
 import com.gradepulse.repository.FieldConfigRepository;
 import com.gradepulse.repository.StudentRepository;
+import com.gradepulse.service.ClassSectionMappingService;
 import com.gradepulse.service.WhatsAppService;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -36,6 +38,9 @@ public class UploadController {
 
     @Autowired
     private FieldConfigRepository fieldConfigRepository;
+
+    @Autowired
+    private ClassSectionMappingService classSectionMappingService;
 
     private final Gson gson = new Gson();
 
@@ -518,9 +523,30 @@ public class UploadController {
             s.setPhotoUrl(dto.getPhotoUrl());
             s.setPreviousSchoolTcUrl(dto.getPreviousSchoolTcUrl());
             s.setAdmissionClass(dto.getAdmissionClass());
-            // Set current_class from upload, default to admission_class if not provided
-            s.setCurrentClass(dto.getCurrentClass() != null && !dto.getCurrentClass().isBlank() 
-                ? dto.getCurrentClass() : dto.getAdmissionClass());
+            
+            // INTEGRATION FIX: Auto-link student to ClassSection
+            String classText = dto.getCurrentClass() != null && !dto.getCurrentClass().isBlank() 
+                ? dto.getCurrentClass() : dto.getAdmissionClass();
+            
+            if (classText != null && !classText.isBlank()) {
+                // Get academic year from form parameters (default to current year)
+                String academicYear = allParams.getOrDefault("academicYear", "2024-2025");
+                
+                // Use smart mapping service to find or create ClassSection
+                ClassSection classSection = classSectionMappingService.findOrCreateClassSection(
+                    classText, academicYear);
+                
+                // Set ClassSection (this auto-updates currentClass via setter)
+                s.setClassSection(classSection);
+                
+                log.debug("Linked student {} to ClassSection: {}", 
+                         dto.getStudentId(), 
+                         classSection != null ? classSection.getFullName() : "none");
+            } else {
+                // Fallback: Set currentClass directly if no classText available
+                s.setCurrentClass(dto.getAdmissionClass());
+            }
+            
             s.setAdmissionDate(dto.getAdmissionDate());
             s.setEnrollmentNo(dto.getEnrollmentNo());
             s.setPreviousMarksheetUrl(dto.getPreviousMarksheetUrl());

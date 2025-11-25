@@ -45,6 +45,11 @@ public class Student {
     @Column(name = "current_class")
     private String currentClass;
 
+    // FK relationship to ClassSection (Phase 1 integration fix)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_section_id")
+    private ClassSection classSection;
+
     @Column(name = "admission_date")
     private LocalDate admissionDate;
 
@@ -195,6 +200,16 @@ public class Student {
 
     public String getCurrentClass() { return currentClass; }
     public void setCurrentClass(String currentClass) { this.currentClass = currentClass; }
+
+    // ClassSection getter/setter with auto-sync to currentClass
+    public ClassSection getClassSection() { return classSection; }
+    public void setClassSection(ClassSection classSection) {
+        this.classSection = classSection;
+        // Auto-sync currentClass for display and backward compatibility
+        if (classSection != null) {
+            this.currentClass = classSection.getFullName();
+        }
+    }
 
     public LocalDate getAdmissionDate() { return admissionDate; }
     public void setAdmissionDate(LocalDate admissionDate) { this.admissionDate = admissionDate; }

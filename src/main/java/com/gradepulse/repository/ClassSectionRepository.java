@@ -32,4 +32,10 @@ public interface ClassSectionRepository extends JpaRepository<ClassSection, Long
 
     Optional<ClassSection> findByAcademicYearAndBoardAndStreamAndClassNameAndSectionName(
         String academicYear, String board, String stream, String className, String sectionName);
+    
+    // NEW: Search by fullName format (for legacy string matching)
+    @Query("SELECT cs FROM ClassSection cs WHERE cs.academicYear = :academicYear " +
+           "AND LOWER(CONCAT(cs.board, ' - ', cs.stream, ' ', cs.className, ' (Section ', cs.sectionName, ')')) " +
+           "LIKE LOWER(CONCAT('%', :searchText, '%'))")
+    List<ClassSection> findByFullNameContainingIgnoreCaseAndAcademicYear(String searchText, String academicYear);
 }

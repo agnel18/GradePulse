@@ -21,6 +21,12 @@ public class StudentUploadDto {
     private String previousSchoolTcUrl;
     private String admissionClass;
     private String currentClass;
+    
+    // V10: Granular class fields
+    private String studentClass;  // e.g., "10", "FYJC", "LKG"
+    private String division;      // e.g., "Science", "Commerce", "General"
+    private String subDivision;   // e.g., "A", "B", "C"
+    
     private LocalDate admissionDate;
     private String enrollmentNo;
     private String previousMarksheetUrl;

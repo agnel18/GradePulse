@@ -528,27 +528,42 @@ public class UploadController {
             s.setPreviousSchoolTcUrl(dto.getPreviousSchoolTcUrl());
             s.setAdmissionClass(dto.getAdmissionClass());
             
-            // INTEGRATION FIX: Auto-link student to ClassSection
-            String classText = dto.getCurrentClass() != null && !dto.getCurrentClass().isBlank() 
-                ? dto.getCurrentClass() : dto.getAdmissionClass();
+            // V10: Set granular class fields
+            s.setStudentClass(dto.getStudentClass());
+            s.setDivision(dto.getDivision());
+            s.setSubDivision(dto.getSubDivision());
             
-            if (classText != null && !classText.isBlank()) {
-                // Get academic year from form parameters (default to current year)
-                String academicYear = allParams.getOrDefault("academicYear", "2024-2025");
+            // INTEGRATION FIX: Auto-link student to ClassSection using separate fields
+            if (dto.getStudentClass() != null && !dto.getStudentClass().isBlank() &&
+                dto.getSubDivision() != null && !dto.getSubDivision().isBlank()) {
                 
-                // Use smart mapping service to find or create ClassSection
+                String board = allParams.getOrDefault("board", "CBSE");
+                
                 ClassSection classSection = classSectionMappingService.findOrCreateClassSection(
-                    classText, academicYear);
+                    dto.getStudentClass(),
+                    dto.getDivision(),
+                    dto.getSubDivision(),
+                    academicYear,
+                    board
+                );
                 
-                // Set ClassSection (this auto-updates currentClass via setter)
                 s.setClassSection(classSection);
-                
-                log.debug("Linked student {} to ClassSection: {}", 
+                log.info("✓ Linked student {} to ClassSection: {}", 
                          dto.getStudentId(), 
                          classSection != null ? classSection.getFullName() : "none");
             } else {
-                // Fallback: Set currentClass directly if no classText available
-                s.setCurrentClass(dto.getAdmissionClass());
+                // Legacy fallback: Parse currentClass if separate fields not provided
+                String classText = dto.getCurrentClass() != null && !dto.getCurrentClass().isBlank() 
+                    ? dto.getCurrentClass() : dto.getAdmissionClass();
+                
+                if (classText != null && !classText.isBlank()) {
+                    @SuppressWarnings("deprecation")
+                    ClassSection classSection = classSectionMappingService.findOrCreateClassSection(
+                        classText, academicYear);
+                    s.setClassSection(classSection);
+                } else {
+                    s.setCurrentClass(dto.getAdmissionClass());
+                }
             }
             
             s.setAdmissionDate(dto.getAdmissionDate());

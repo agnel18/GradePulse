@@ -50,6 +50,16 @@ public class Student {
     @JoinColumn(name = "class_section_id")
     private ClassSection classSection;
 
+    // V10: Granular class fields for easier upload
+    @Column(name = "student_class", length = 50)
+    private String studentClass; // e.g., "10", "FYJC", "LKG"
+
+    @Column(name = "division", length = 50)
+    private String division; // e.g., "Science", "Commerce", "Arts", "General"
+
+    @Column(name = "sub_division", length = 10)
+    private String subDivision; // e.g., "A", "B", "C"
+
     @Column(name = "admission_date")
     private LocalDate admissionDate;
 
@@ -208,8 +218,21 @@ public class Student {
         // Auto-sync currentClass for display and backward compatibility
         if (classSection != null) {
             this.currentClass = classSection.getFullName();
+            this.studentClass = classSection.getClassName();
+            this.division = classSection.getStream();
+            this.subDivision = classSection.getSectionName();
         }
     }
+
+    // Granular class field getters/setters
+    public String getStudentClass() { return studentClass; }
+    public void setStudentClass(String studentClass) { this.studentClass = studentClass; }
+
+    public String getDivision() { return division; }
+    public void setDivision(String division) { this.division = division; }
+
+    public String getSubDivision() { return subDivision; }
+    public void setSubDivision(String subDivision) { this.subDivision = subDivision; }
 
     public LocalDate getAdmissionDate() { return admissionDate; }
     public void setAdmissionDate(LocalDate admissionDate) { this.admissionDate = admissionDate; }

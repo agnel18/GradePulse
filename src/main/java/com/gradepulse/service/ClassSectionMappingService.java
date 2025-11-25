@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,13 +32,70 @@ public class ClassSectionMappingService {
     private final ClassSectionRepository classSectionRepository;
     
     /**
-     * Find existing ClassSection or create new one based on free-text class name.
+     * Find or create ClassSection using separate fields (preferred method).
+     * 
+     * @param studentClass Class name (e.g., "10", "FYJC", "LKG")
+     * @param division Division/Stream (e.g., "Science", "Commerce", "General")
+     * @param subDivision Section (e.g., "A", "B", "C")
+     * @param academicYear Academic year (e.g., "2024-2025")
+     * @param board Board (e.g., "CBSE", "SSC", "HSC")
+     * @return ClassSection entity (existing or newly created)
+     */
+    @Transactional
+    public ClassSection findOrCreateClassSection(String studentClass, String division, String subDivision, 
+                                                   String academicYear, String board) {
+        if (studentClass == null || studentClass.isBlank() || subDivision == null || subDivision.isBlank()) {
+            log.warn("Class or sub-division is empty, returning null");
+            return null;
+        }
+        
+        // Default values
+        if (board == null || board.isBlank()) board = "CBSE";
+        if (division == null || division.isBlank()) division = "General";
+        
+        String normalizedClass = normalizeClassName(studentClass);
+        String normalizedDivision = division.trim();
+        String normalizedSection = subDivision.trim().toUpperCase();
+        
+        log.debug("Finding/creating ClassSection: class={}, division={}, section={}, year={}, board={}", 
+                  normalizedClass, normalizedDivision, normalizedSection, academicYear, board);
+        
+        // Try to find existing ClassSection
+        Optional<ClassSection> existing = classSectionRepository
+            .findByAcademicYearAndBoardAndStreamAndClassNameAndSectionName(
+                academicYear, board, normalizedDivision, normalizedClass, normalizedSection
+            );
+            
+        if (existing.isPresent()) {
+            log.info("Found existing ClassSection: {}", existing.get().getFullName());
+            return existing.get();
+        }
+        
+        // Create new ClassSection
+        ClassSection newSection = new ClassSection();
+        newSection.setAcademicYear(academicYear);
+        newSection.setBoard(board);
+        newSection.setStream(normalizedDivision);
+        newSection.setClassName(normalizedClass);
+        newSection.setSectionName(normalizedSection);
+        newSection.setIsActive(true);
+        
+        ClassSection saved = classSectionRepository.save(newSection);
+        log.info("✓ Created new ClassSection: {} (ID: {})", saved.getFullName(), saved.getId());
+        
+        return saved;
+    }
+    
+    /**
+     * Legacy method: Find existing ClassSection or create new one based on free-text class name.
      * This enables seamless Excel upload → Attendance marking integration.
      * 
      * @param classText Free-text class name from Excel (e.g., "10-A", "Class 5 B")
      * @param academicYear Academic year (e.g., "2024-2025")
      * @return ClassSection entity (existing or newly created)
+     * @deprecated Use findOrCreateClassSection with separate fields instead
      */
+    @Deprecated
     @Transactional
     public ClassSection findOrCreateClassSection(String classText, String academicYear) {
         if (classText == null || classText.isBlank()) {
@@ -181,6 +237,34 @@ public class ClassSectionMappingService {
         
         // Default to A if no section detected
         return "A";
+    }
+    
+    /**
+     * Normalize class name to standard format
+     */
+    private String normalizeClassName(String studentClass) {
+        String text = studentClass.trim().toUpperCase();
+        
+        // Pre-Primary classes
+        if (text.contains("LKG")) return "LKG";
+        if (text.contains("UKG")) return "UKG";
+        if (text.contains("NURSERY")) return "Nursery";
+        
+        // Junior/Senior College
+        if (text.contains("FYJC") || text.contains("FY") || text.equals("11")) return "FYJC";
+        if (text.contains("SYJC") || text.contains("SY") || text.equals("12")) return "SYJC";
+        
+        // Extract numeric class (1-12)
+        Pattern numberPattern = Pattern.compile("\\b([1-9]|1[0-2])\\b");
+        Matcher matcher = numberPattern.matcher(text);
+        if (matcher.find()) {
+            String number = matcher.group(1);
+            int num = Integer.parseInt(number);
+            return number + getOrdinalSuffix(num);
+        }
+        
+        // Return as-is if no pattern matched
+        return studentClass.trim();
     }
     
     private String getOrdinalSuffix(int number) {

@@ -39,7 +39,7 @@ public class StudentViewController {
     }
 
     @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String showEditForm(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         Student student = studentRepository.findById(id).orElse(null);
         if (student == null) {
             redirectAttributes.addFlashAttribute("error", "Student not found with ID: " + id);
@@ -52,7 +52,7 @@ public class StudentViewController {
     }
 
     @PostMapping("/save")
-    public String saveStudent(@ModelAttribute Student student, RedirectAttributes redirectAttributes) {
+    public String saveStudent(@ModelAttribute("student") Student student, RedirectAttributes redirectAttributes) {
         try {
             studentRepository.save(student);
             redirectAttributes.addFlashAttribute("success", "Student added successfully: " + student.getFullName());
@@ -65,7 +65,7 @@ public class StudentViewController {
     }
 
     @PostMapping("/update/{id}")
-    public String updateStudent(@PathVariable Long id, @ModelAttribute Student student, RedirectAttributes redirectAttributes) {
+    public String updateStudent(@PathVariable("id") Long id, @ModelAttribute("student") Student student, RedirectAttributes redirectAttributes) {
         try {
             Student existing = studentRepository.findById(id).orElse(null);
             if (existing == null) {
@@ -84,7 +84,7 @@ public class StudentViewController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteStudent(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String deleteStudent(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         try {
             Student student = studentRepository.findById(id).orElse(null);
             if (student == null) {
@@ -103,7 +103,7 @@ public class StudentViewController {
     }
 
     @GetMapping("/view/{id}")
-    public String viewStudent(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String viewStudent(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         Student student = studentRepository.findById(id).orElse(null);
         if (student == null) {
             redirectAttributes.addFlashAttribute("error", "Student not found");

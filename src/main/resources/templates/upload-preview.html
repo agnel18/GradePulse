@@ -129,9 +129,12 @@
                 <thead class="table-light">
                 <tr>
                     <th th:if="${activeFieldNames.contains('student_id')}">Student ID</th>
+                        <th th:if="${activeFieldNames.contains('student_id')}">Student ID <span class="badge bg-danger">⭐ Required</span></th>
                     <th th:if="${activeFieldNames.contains('full_name')}">Full Name</th>
+                        <th th:if="${activeFieldNames.contains('full_name')}">Full Name <span class="badge bg-danger">⭐ Required</span></th>
                     <th th:if="${activeFieldNames.contains('date_of_birth')}">DOB</th>
                     <th th:if="${activeFieldNames.contains('gender')}">Gender</th>
+                        <th th:if="${activeFieldNames.contains('gender')}">Gender <span class="badge bg-danger">⭐ Required</span></th>
                     <th th:if="${activeFieldNames.contains('apaar_id')}">APAAR ID</th>
                     <th th:if="${activeFieldNames.contains('aadhaar_number')}">Aadhaar</th>
                     <th th:if="${activeFieldNames.contains('category')}">Category</th>
@@ -154,9 +157,11 @@
                     <th th:if="${activeFieldNames.contains('udise_uploaded')}">UDISE</th>
                     <th th:if="${activeFieldNames.contains('father_name')}">Father</th>
                     <th th:if="${activeFieldNames.contains('father_contact')}">F. Contact</th>
+                        <th th:if="${activeFieldNames.contains('father_contact')}">F. Contact <span class="badge bg-danger">⭐ Required</span></th>
                     <th th:if="${activeFieldNames.contains('father_aadhaar')}">F. Aadhaar</th>
                     <th th:if="${activeFieldNames.contains('mother_name')}">Mother</th>
                     <th th:if="${activeFieldNames.contains('mother_contact')}">M. Contact</th>
+                        <th th:if="${activeFieldNames.contains('mother_contact')}">M. Contact <span class="badge bg-danger">⭐ Required</span></th>
                     <th th:if="${activeFieldNames.contains('mother_aadhaar')}">M. Aadhaar</th>
                     <th th:if="${activeFieldNames.contains('guardian_name')}">Guardian</th>
                     <th th:if="${activeFieldNames.contains('guardian_contact')}">G. Contact</th>

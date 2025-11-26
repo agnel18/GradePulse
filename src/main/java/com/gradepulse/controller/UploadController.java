@@ -557,6 +557,11 @@ public class UploadController {
             s.setDivision(dto.getDivision());
             s.setSubDivision(dto.getSubDivision());
             
+            // V12: Set multi-school and board fields
+            s.setSchoolName(dto.getSchoolName());
+            s.setBoard(dto.getBoard());
+            s.setAcademicYear(dto.getAcademicYear());
+            
             // INTEGRATION FIX: Auto-link student to ClassSection using separate fields
             if (dto.getStudentClass() != null && !dto.getStudentClass().isBlank() &&
                 dto.getSubDivision() != null && !dto.getSubDivision().isBlank()) {
@@ -867,6 +872,12 @@ public class UploadController {
                 case "guardianAadhaar" -> dto.setGuardianAadhaar(value);
                 case "familyStatus" -> dto.setFamilyStatus(value);
                 case "languagePreference" -> dto.setLanguagePreference(value);
+                case "studentClass" -> dto.setStudentClass(value);
+                case "division" -> dto.setDivision(value);
+                case "subDivision" -> dto.setSubDivision(value);
+                case "schoolName" -> dto.setSchoolName(value);
+                case "board" -> dto.setBoard(value);
+                case "academicYear" -> dto.setAcademicYear(value);
             }
         } catch (Exception e) {
             log.warn("Failed to set field {} = {}: {}", field, value, e.getMessage());

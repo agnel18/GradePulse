@@ -27,6 +27,11 @@ public class StudentUploadDto {
     private String division;      // e.g., "Science", "Commerce", "General"
     private String subDivision;   // e.g., "A", "B", "C"
     
+    // V12: Multi-school and board fields
+    private String schoolName;    // e.g., "Cambridge High School", "Ryan International"
+    private String board;         // e.g., "CBSE", "ICSE", "SSC", "Mumbai University"
+    private String academicYear;  // e.g., "2024-2025"
+    
     private LocalDate admissionDate;
     private String enrollmentNo;
     private String previousMarksheetUrl;

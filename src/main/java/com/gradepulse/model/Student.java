@@ -60,6 +60,16 @@ public class Student {
     @Column(name = "sub_division", length = 10)
     private String subDivision; // e.g., "A", "B", "C"
 
+    // V12: Multi-school and board management
+    @Column(name = "school_name", length = 255)
+    private String schoolName; // e.g., "Cambridge High School", "Ryan International"
+
+    @Column(name = "board", length = 100)
+    private String board; // e.g., "CBSE", "ICSE", "SSC", "Mumbai University"
+
+    @Column(name = "academic_year", length = 20)
+    private String academicYear; // e.g., "2024-2025"
+
     @Column(name = "admission_date")
     private LocalDate admissionDate;
 
@@ -233,6 +243,16 @@ public class Student {
 
     public String getSubDivision() { return subDivision; }
     public void setSubDivision(String subDivision) { this.subDivision = subDivision; }
+
+    // V12: Multi-school and board getters/setters
+    public String getSchoolName() { return schoolName; }
+    public void setSchoolName(String schoolName) { this.schoolName = schoolName; }
+
+    public String getBoard() { return board; }
+    public void setBoard(String board) { this.board = board; }
+
+    public String getAcademicYear() { return academicYear; }
+    public void setAcademicYear(String academicYear) { this.academicYear = academicYear; }
 
     public LocalDate getAdmissionDate() { return admissionDate; }
     public void setAdmissionDate(LocalDate admissionDate) { this.admissionDate = admissionDate; }

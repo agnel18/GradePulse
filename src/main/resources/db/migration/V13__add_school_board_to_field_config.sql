@@ -7,11 +7,3 @@ VALUES
     ('school_name', 'School Name', 'STRING', TRUE, TRUE, 40),
     ('board', 'Board', 'STRING', TRUE, TRUE, 41),
     ('academic_year', 'Academic Year', 'STRING', TRUE, TRUE, 42);
-
--- Optional: provide descriptions for clarity
-MERGE INTO field_config_description (field_name, description)
-KEY(field_name)
-VALUES
-    ('school_name', 'Name of the specific school within the management group'),
-    ('board', 'Educational board affiliation (CBSE, ICSE, SSC, HSC, etc.)'),
-    ('academic_year', 'Current academic year in format YYYY-YYYY');

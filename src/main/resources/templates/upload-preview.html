@@ -144,13 +144,13 @@
                     <th th:if="${activeFieldNames.contains('mother_contact')}">M. Contact <span class="badge bg-danger">⭐ Required</span></th>
                     
                     <!-- P1 High Priority -->
-                    <th th:if="${activeFieldNames.contains('date_of_birth')}">DOB</th>
+                    <th th:if="${activeFieldNames.contains('date_of_birth')}">DOB (DD/MM/YYYY)</th>
                     <th th:if="${activeFieldNames.contains('category')}">Category</th>
                     <th th:if="${activeFieldNames.contains('address')}">Address</th>
-                    <th th:if="${activeFieldNames.contains('apaar_id')}">APAAR ID</th>
-                    <th th:if="${activeFieldNames.contains('admission_class')}">Adm Class</th>
-                    <th th:if="${activeFieldNames.contains('admission_date')}">Adm Date</th>
-                    <th th:if="${activeFieldNames.contains('enrollment_no')}">Enroll No</th>
+                    <th th:if="${activeFieldNames.contains('apaar_id')}">APAAR ID (Automated Permanent Academic Account Registry)</th>
+                    <th th:if="${activeFieldNames.contains('admission_class')}">Admission Class</th>
+                    <th th:if="${activeFieldNames.contains('admission_date')}">Admission Date (DD/MM/YYYY)</th>
+                    <th th:if="${activeFieldNames.contains('enrollment_no')}">Enrollment No</th>
                     <th th:if="${activeFieldNames.contains('guardian_name')}">Guardian</th>
                     <th th:if="${activeFieldNames.contains('guardian_contact')}">G. Contact</th>
                     <th th:if="${activeFieldNames.contains('guardian_relation')}">G. Relation</th>

@@ -95,7 +95,9 @@ public class UploadController {
         List<FieldConfig> allFields = fieldConfigRepository.findAll();
         Map<String, String> displayToFieldName = new HashMap<>();
         for (FieldConfig field : allFields) {
-            displayToFieldName.put(field.getDisplayName().toLowerCase().trim(), field.getFieldName());
+            String normalizedDisplayName = field.getDisplayName().toLowerCase().trim();
+            displayToFieldName.put(normalizedDisplayName, field.getFieldName());
+            log.info("Field mapping: '{}' -> '{}'", normalizedDisplayName, field.getFieldName());
         }
         log.info("Loaded {} field mappings from database", displayToFieldName.size());
 

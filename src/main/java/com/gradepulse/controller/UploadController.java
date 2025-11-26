@@ -9,6 +9,7 @@ import com.gradepulse.repository.FieldConfigRepository;
 import com.gradepulse.repository.StudentRepository;
 import com.gradepulse.service.ClassSectionMappingService;
 import com.gradepulse.service.WhatsAppService;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
@@ -19,7 +20,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -63,7 +66,28 @@ public class UploadController {
             return "upload";
         }
 
-        Workbook workbook = new XSSFWorkbook(file.getInputStream());
+        String filename = file.getOriginalFilename();
+        if (filename == null) {
+            model.addAttribute("error", "Invalid filename");
+            return "upload";
+        }
+
+        // Determine file type and create appropriate workbook
+        Workbook workbook;
+        if (filename.toLowerCase().endsWith(".csv")) {
+            log.info("Processing CSV file");
+            workbook = convertCsvToWorkbook(file);
+        } else if (filename.toLowerCase().endsWith(".xlsx")) {
+            log.info("Processing XLSX file");
+            workbook = new XSSFWorkbook(file.getInputStream());
+        } else if (filename.toLowerCase().endsWith(".xls")) {
+            log.info("Processing XLS file");
+            workbook = new HSSFWorkbook(file.getInputStream());
+        } else {
+            model.addAttribute("error", "Unsupported file format. Please upload .xlsx, .xls, or .csv");
+            return "upload";
+        }
+
         Sheet sheet = workbook.getSheetAt(0);
         List<StudentUploadDto> previewList = new ArrayList<>();
 
@@ -865,5 +889,56 @@ public class UploadController {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    /**
+     * Convert CSV file to Apache POI Workbook for unified processing
+     */
+    private Workbook convertCsvToWorkbook(MultipartFile file) throws IOException {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Students");
+        
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+            String line;
+            int rowIndex = 0;
+            
+            while ((line = reader.readLine()) != null) {
+                Row row = sheet.createRow(rowIndex++);
+                String[] cells = parseCsvLine(line);
+                
+                for (int i = 0; i < cells.length; i++) {
+                    Cell cell = row.createCell(i);
+                    cell.setCellValue(cells[i]);
+                }
+            }
+        }
+        
+        log.info("Converted CSV to workbook with {} rows", sheet.getLastRowNum() + 1);
+        return workbook;
+    }
+
+    /**
+     * Parse CSV line handling quoted fields properly
+     */
+    private String[] parseCsvLine(String line) {
+        List<String> result = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean inQuotes = false;
+        
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            
+            if (c == '"') {
+                inQuotes = !inQuotes;
+            } else if (c == ',' && !inQuotes) {
+                result.add(current.toString().trim());
+                current = new StringBuilder();
+            } else {
+                current.append(c);
+            }
+        }
+        result.add(current.toString().trim());
+        
+        return result.toArray(new String[0]);
     }
 }

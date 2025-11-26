@@ -131,17 +131,17 @@
             <div class="upload-container">
                 <div class="text-center">
                     <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                    <h2 class="mb-3">Upload Student Excel File</h2>
-                    <p class="text-muted mb-4">Upload your Excel file (.xlsx) with student data</p>
+                    <h2 class="mb-3">Upload Student Data File</h2>
+                    <p class="text-muted mb-4">Upload Excel (.xlsx, .xls) or CSV file with student data</p>
                 </div>
 
                 <form method="post" enctype="multipart/form-data" th:action="@{/upload}" id="uploadForm">
                     <div class="file-input-wrapper mb-4">
-                        <input type="file" name="file" accept=".xlsx" id="fileInput" required />
+                        <input type="file" name="file" accept=".xlsx,.xls,.csv" id="fileInput" required />
                         <label class="file-input-label" for="fileInput" id="fileLabel">
                             <i class="fas fa-file-excel fa-3x text-success mb-3"></i>
                             <h5>Click to select or drag & drop</h5>
-                            <p class="text-muted mb-0">Excel files (.xlsx) only</p>
+                            <p class="text-muted mb-0">Excel (.xlsx, .xls) or CSV (.csv) files</p>
                         </label>
                     </div>
 

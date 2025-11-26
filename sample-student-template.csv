@@ -1,0 +1,16 @@
+Student ID,Full Name,Date of Birth,Gender,Class,Division,Sub-Division,Father Name,Father Contact,Mother Name,Mother Contact,Category,Address,Admission Class,Admission Date,Enrollment No,APAAR ID,Aadhaar Number,Blood Group,Fee Status,Guardian Name,Guardian Contact,Guardian Relation,Language
+STU001,Rajesh Kumar,15/05/2010,Male,10,General,A,Suresh Kumar,9876543210,Priya Kumar,9876543211,General,123 MG Road Mumbai,9,01/04/2023,EN2023001,APR123456789,123456789012,O+,Paid,,,English
+STU002,Priya Sharma,22/08/2010,Female,10,General,A,Amit Sharma,9876543212,Neha Sharma,9876543213,OBC,456 Park Street Kolkata,9,01/04/2023,EN2023002,APR987654321,234567890123,A+,Pending,,,Hindi
+STU003,Mohammed Ali,10/03/2010,Male,10,General,B,Imran Ali,9876543214,Fatima Ali,9876543215,General,789 Anna Salai Chennai,9,01/04/2023,EN2023003,,345678901234,B+,Paid,,,English
+STU004,Ananya Reddy,05/11/2010,Female,10,General,B,Venkat Reddy,9876543216,Lakshmi Reddy,9876543217,General,321 Brigade Road Bangalore,9,01/04/2023,EN2023004,APR456789123,456789012345,AB+,Paid,,,Telugu
+STU005,Arjun Patel,18/06/2009,Male,11,Science,A,Kiran Patel,9876543218,Meera Patel,9876543219,General,654 Law Garden Ahmedabad,10,01/04/2022,EN2022001,APR789123456,567890123456,O-,Paid,,,Gujarati
+STU006,Divya Nair,25/09/2009,Female,11,Science,A,Sunil Nair,9876543220,Asha Nair,9876543221,SC,987 Marine Drive Kochi,10,01/04/2022,EN2022002,,678901234567,A-,Waived,,,Malayalam
+STU007,Kabir Singh,30/01/2009,Male,11,Commerce,A,Rajesh Singh,9876543222,Anjali Singh,9876543223,General,147 Connaught Place Delhi,10,01/04/2022,EN2022003,APR321654987,789012345678,B-,Paid,,,Hindi
+STU008,Zara Khan,12/12/2009,Female,11,Science,B,Salman Khan,9876543224,Ayesha Khan,9876543225,General,258 Park Street Hyderabad,10,01/04/2022,EN2022004,APR654987321,890123456789,AB-,Paid,,,Urdu
+STU009,Advait Joshi,08/04/2011,Male,9,General,A,Prakash Joshi,9876543226,Swati Joshi,9876543227,General,369 FC Road Pune,8,01/04/2024,EN2024001,APR147258369,901234567890,O+,Paid,,,Marathi
+STU010,Myra Desai,20/07/2011,Female,9,General,A,Harsh Desai,9876543228,Ritu Desai,9876543229,OBC,741 SG Highway Surat,8,01/04/2024,EN2024002,,012345678901,A+,Pending,,,Gujarati
+STU011,Aadhya Iyer,14/07/2009,Female,FYJC,Science,A,Venkat Iyer,9876543230,Deepa Iyer,9876543231,General,852 Residency Road Bangalore,10,01/06/2023,JC2023001,APR963852741,123098765432,B+,Paid,,,Kannada
+STU012,Vivaan Mehta,28/02/2009,Male,FYJC,Commerce,A,Nikhil Mehta,9876543232,Sonal Mehta,9876543233,General,963 Linking Road Mumbai,10,01/06/2023,JC2023002,APR852741963,234109876543,O+,Paid,,,English
+STU013,Saanvi Gupta,19/05/2012,Female,8,General,A,Rajat Gupta,9876543234,Pooja Gupta,9876543235,General,159 Civil Lines Jaipur,7,01/04/2024,EN2024003,,345210987654,A-,Paid,,,Hindi
+STU014,Reyansh Verma,03/10/2012,Male,8,General,B,Manoj Verma,9876543236,Kavita Verma,9876543237,SC,357 Mall Road Lucknow,7,01/04/2024,EN2024004,APR741852963,456321098765,B-,Waived,,,Hindi
+STU015,Aanya Kapoor,27/12/2010,Female,10,Science,A,Ravi Kapoor,9876543238,Deepika Kapoor,9876543239,General,468 Sector 17 Chandigarh,9,01/04/2023,EN2023005,APR159753486,567432109876,AB+,Paid,,,Punjabi

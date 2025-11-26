@@ -176,6 +176,16 @@ public class UploadController {
             dto.setFamilyStatus(getStringByField(row, columnMap, "family_status"));
             dto.setLanguagePreference(getStringByField(row, columnMap, "language_preference"));
 
+            // V12/V13: Multi-school and board fields
+            dto.setSchoolName(getStringByField(row, columnMap, "school_name"));
+            dto.setBoard(getStringByField(row, columnMap, "board"));
+            dto.setAcademicYear(getStringByField(row, columnMap, "academic_year"));
+            
+            // V10/V15: Class/Division/Section fields
+            dto.setStudentClass(getStringByField(row, columnMap, "student_class"));
+            dto.setDivision(getStringByField(row, columnMap, "division"));
+            dto.setSubDivision(getStringByField(row, columnMap, "sub_division"));
+
             // Validate
             validateDto(dto);
 
@@ -254,6 +264,14 @@ public class UploadController {
         fieldToPropMap.put("guardian_aadhaar", "guardianAadhaar");
         fieldToPropMap.put("family_status", "familyStatus");
         fieldToPropMap.put("language_preference", "languagePreference");
+        // V12/V13: Multi-school and board fields
+        fieldToPropMap.put("school_name", "schoolName");
+        fieldToPropMap.put("board", "board");
+        fieldToPropMap.put("academic_year", "academicYear");
+        // V10/V15: Class/Division/Section fields
+        fieldToPropMap.put("student_class", "studentClass");
+        fieldToPropMap.put("division", "division");
+        fieldToPropMap.put("sub_division", "subDivision");
         model.addAttribute("fieldToPropMap", fieldToPropMap);
 
         log.info("Preview ready: {} total, {} valid", previewList.size(), model.getAttribute("validCount"));

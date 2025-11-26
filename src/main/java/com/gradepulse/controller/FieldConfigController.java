@@ -286,7 +286,7 @@ public class FieldConfigController {
         // Add all active field headers with display names
         for (FieldConfig field : activeFields) {
             Cell cell = headerRow.createCell(colIndex);
-            String headerText = field.getDisplayName() + (field.getRequired() ? " *" : "");
+            String headerText = field.getDisplayName(); // Removed asterisk rendering per user request
             cell.setCellValue(headerText);
             cell.setCellStyle(headerStyle);
             sheet.setColumnWidth(colIndex, 25 * 256);

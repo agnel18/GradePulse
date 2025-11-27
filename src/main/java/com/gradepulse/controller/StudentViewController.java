@@ -39,6 +39,15 @@ public class StudentViewController {
             @RequestParam(defaultValue = "25") int size,
             Model model) {
         
+        // Normalize empty strings to null
+        search = (search != null && search.trim().isEmpty()) ? null : search;
+        schoolName = (schoolName != null && schoolName.trim().isEmpty()) ? null : schoolName;
+        board = (board != null && board.trim().isEmpty()) ? null : board;
+        academicYear = (academicYear != null && academicYear.trim().isEmpty()) ? null : academicYear;
+        studentClass = (studentClass != null && studentClass.trim().isEmpty()) ? null : studentClass;
+        division = (division != null && division.trim().isEmpty()) ? null : division;
+        gender = (gender != null && gender.trim().isEmpty()) ? null : gender;
+        
         List<Student> students = studentRepository.findAll();
         
         // Apply filters
@@ -89,10 +98,16 @@ public class StudentViewController {
         }
         
         // Apply pagination to filtered list
-        int start = Math.min(page * size, students.size());
-        int end = Math.min(start + size, students.size());
-        List<Student> paginatedStudents = students.subList(start, end);
-        int totalPages = (int) Math.ceil((double) students.size() / size);
+        int filteredSize = students != null ? students.size() : 0;
+        int totalPages = filteredSize > 0 ? (int) Math.ceil((double) filteredSize / size) : 0;
+        
+        // Ensure page is within bounds
+        if (page < 0) page = 0;
+        if (page >= totalPages && totalPages > 0) page = totalPages - 1;
+        
+        int start = Math.min(page * size, filteredSize);
+        int end = Math.min(start + size, filteredSize);
+        List<Student> paginatedStudents = filteredSize > 0 ? students.subList(start, end) : new ArrayList<>();
         
         // Get unique values for filter dropdowns
         List<Student> allStudents = studentRepository.findAll();
@@ -104,11 +119,11 @@ public class StudentViewController {
         
         model.addAttribute("students", paginatedStudents);
         model.addAttribute("totalStudents", allStudents.size());
-        model.addAttribute("filteredCount", students.size());
+        model.addAttribute("filteredCount", filteredSize);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("pageSize", size);
-        log.info("Listing {} students on page {} of {} (filtered from {})", paginatedStudents.size(), page + 1, totalPages, allStudents.size());
+        log.info("Listing {} students on page {} of {} (filtered from {} total)", paginatedStudents.size(), page + 1, Math.max(totalPages, 1), allStudents.size());
         return "students-list";
     }
 

@@ -389,7 +389,7 @@
         </div>
         
         <!-- Pagination Controls -->
-        <div class="d-flex justify-content-between align-items-center mt-3" th:if="${totalPages != null && totalPages > 1}">
+        <div class="d-flex justify-content-between align-items-center mt-3" th:if="${totalPages != null && totalPages > 1 && filteredCount > 0}">
             <div>
                 <p class="text-muted mb-0">
                     Showing <strong th:text="${currentPage * pageSize + 1}">1</strong> 

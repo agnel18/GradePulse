@@ -704,22 +704,31 @@ public class UploadController {
         Cell cell = row.getCell(col);
         if (cell == null) return null;
         
-        // Handle numeric date cells (Excel date format)
-        if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
-            return cell.getDateCellValue().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+        // Handle numeric date cells (Excel date format or Excel date serial number)
+        if (cell.getCellType() == CellType.NUMERIC) {
+            // Check if it's formatted as a date OR if the number is in valid Excel date range (1900-2100)
+            double numValue = cell.getNumericCellValue();
+            if (DateUtil.isCellDateFormatted(cell) || (numValue >= 1 && numValue <= 73050)) {
+                // Excel date serial: 1 = 1900-01-01, 40517 = 2010-12-01
+                try {
+                    return cell.getDateCellValue().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+                } catch (Exception e) {
+                    log.warn("Could not parse numeric date value: {}", numValue);
+                }
+            }
         }
         
         // Handle string date cells
         String str = getString(row, col);
         if (str == null || str.trim().isEmpty()) return null;
         
-        // Try multiple date formats
+        // Try multiple date formats (DD/MM/YYYY preferred for Indian context)
         String[] patterns = {
-            "dd-MMM-yyyy",  // 15-Jan-2015
+            "dd/MM/yyyy",   // 15/01/2015 (Indian format - try first)
             "dd-MM-yyyy",   // 15-01-2015
+            "dd-MMM-yyyy",  // 15-Jan-2015
             "yyyy-MM-dd",   // 2015-01-15
-            "dd/MM/yyyy",   // 15/01/2015
-            "MM/dd/yyyy"    // 01/15/2015
+            "MM/dd/yyyy"    // 01/15/2015 (US format - try last)
         };
         
         for (String pattern : patterns) {

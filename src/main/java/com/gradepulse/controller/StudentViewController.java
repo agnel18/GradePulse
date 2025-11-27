@@ -22,11 +22,77 @@ public class StudentViewController {
     private StudentRepository studentRepository;
 
     @GetMapping
-    public String listStudents(Model model) {
+    public String listStudents(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String schoolName,
+            @RequestParam(required = false) String board,
+            @RequestParam(required = false) String academicYear,
+            @RequestParam(required = false) String studentClass,
+            @RequestParam(required = false) String division,
+            @RequestParam(required = false) String gender,
+            Model model) {
+        
         List<Student> students = studentRepository.findAll();
+        
+        // Apply filters
+        if (search != null && !search.trim().isEmpty()) {
+            String s = search.toLowerCase();
+            students = students.stream()
+                .filter(st -> (st.getStudentId() != null && st.getStudentId().toLowerCase().contains(s)) ||
+                             (st.getFullName() != null && st.getFullName().toLowerCase().contains(s)) ||
+                             (st.getFatherContact() != null && st.getFatherContact().contains(s)) ||
+                             (st.getMotherContact() != null && st.getMotherContact().contains(s)))
+                .toList();
+        }
+        
+        if (schoolName != null && !schoolName.trim().isEmpty()) {
+            students = students.stream()
+                .filter(st -> st.getSchoolName() != null && st.getSchoolName().equals(schoolName))
+                .toList();
+        }
+        
+        if (board != null && !board.trim().isEmpty()) {
+            students = students.stream()
+                .filter(st -> st.getBoard() != null && st.getBoard().equals(board))
+                .toList();
+        }
+        
+        if (academicYear != null && !academicYear.trim().isEmpty()) {
+            students = students.stream()
+                .filter(st -> st.getAcademicYear() != null && st.getAcademicYear().equals(academicYear))
+                .toList();
+        }
+        
+        if (studentClass != null && !studentClass.trim().isEmpty()) {
+            students = students.stream()
+                .filter(st -> st.getStudentClass() != null && st.getStudentClass().equals(studentClass))
+                .toList();
+        }
+        
+        if (division != null && !division.trim().isEmpty()) {
+            students = students.stream()
+                .filter(st -> st.getDivision() != null && st.getDivision().equals(division))
+                .toList();
+        }
+        
+        if (gender != null && !gender.trim().isEmpty()) {
+            students = students.stream()
+                .filter(st -> st.getGender() != null && st.getGender().equalsIgnoreCase(gender))
+                .toList();
+        }
+        
+        // Get unique values for filter dropdowns
+        List<Student> allStudents = studentRepository.findAll();
+        model.addAttribute("schools", allStudents.stream().map(Student::getSchoolName).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
+        model.addAttribute("boards", allStudents.stream().map(Student::getBoard).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
+        model.addAttribute("academicYears", allStudents.stream().map(Student::getAcademicYear).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
+        model.addAttribute("classes", allStudents.stream().map(Student::getStudentClass).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
+        model.addAttribute("divisions", allStudents.stream().map(Student::getDivision).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
+        
         model.addAttribute("students", students);
-        model.addAttribute("totalStudents", students.size());
-        log.info("Listing {} students", students.size());
+        model.addAttribute("totalStudents", allStudents.size());
+        model.addAttribute("filteredCount", students.size());
+        log.info("Listing {} students (filtered from {})", students.size(), allStudents.size());
         return "students-list";
     }
 

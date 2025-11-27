@@ -23,8 +23,9 @@
         .nav-link:hover {
             color: white !important;
         }
-        .container {
+        .container-fluid {
             margin-top: 2rem;
+            padding: 0 3rem;
         }
         .header-section {
             background: white;
@@ -33,23 +34,38 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             margin-bottom: 2rem;
         }
-        .stats-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .stats-row {
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
             padding: 1.5rem;
             border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 4px solid #667eea;
         }
-        .stats-card h3 {
-            color: white !important;
-            margin: 0;
-            font-size: 2.5rem;
+        .stat-card .stat-value {
+            font-size: 2rem;
             font-weight: 700;
-        }
-        .stats-card p {
-            color: rgba(255,255,255,0.9);
+            color: #667eea;
             margin: 0;
-            font-size: 1rem;
+        }
+        .stat-card .stat-label {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        .filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .filter-section h5 {
+            color: #1e293b;
+            margin-bottom: 1rem;
+            font-weight: 600;
         }
         .table-container {
             background: white;
@@ -57,44 +73,72 @@
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
+        .table {
+            margin: 0;
+        }
         .table thead th {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             font-weight: 600;
             text-transform: uppercase;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             letter-spacing: 0.5px;
+            padding: 1rem 0.75rem;
+            white-space: nowrap;
         }
         .table tbody tr {
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
         .table tbody tr:hover {
             background-color: #f8f9ff;
-            transform: scale(1.01);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .table tbody td {
+            vertical-align: middle;
+            padding: 0.75rem;
+            font-size: 0.875rem;
         }
         .btn-action {
-            padding: 0.25rem 0.5rem;
+            padding: 0.4rem 0.7rem;
             font-size: 0.875rem;
-            margin: 0 0.1rem;
+            margin: 0 0.15rem;
+            border-radius: 5px;
+        }
+        .badge-custom {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
         .alert {
             border-radius: 10px;
             border: none;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        .search-box {
-            margin-bottom: 1.5rem;
-        }
-        .search-box input {
-            border-radius: 25px;
-            padding: 0.75rem 1.5rem;
+        .filter-select {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
             border: 2px solid #e2e8f0;
         }
-        .search-box input:focus {
+        .filter-select:focus {
             border-color: #667eea;
             box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-filter {
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
         }
     </style>
 </head>
@@ -134,28 +178,45 @@
     </div>
 </nav>
 
-<div class="container">
+<div class="container-fluid">
     <!-- Header Section -->
     <div class="header-section">
         <div class="row align-items-center">
             <div class="col-md-6">
                 <h2><i class="fas fa-users"></i> View Students</h2>
-                <p class="text-muted">Manage and view all student records</p>
+                <p class="text-muted mb-0">Manage and view all student records</p>
             </div>
             <div class="col-md-6 text-end">
-                <a href="/students/add" class="btn btn-primary btn-lg">
+                <a href="/upload" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-upload"></i> Bulk Upload
+                </a>
+                <a href="/students/add" class="btn btn-primary">
                     <i class="fas fa-plus"></i> Add New Student
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Stats Card -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="stats-card">
-                <h3 th:text="${totalStudents}">0</h3>
-                <p>Total Students</p>
+    <!-- Stats Cards -->
+    <div class="stats-row">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <p class="stat-value" th:text="${totalStudents}">0</p>
+                    <p class="stat-label"><i class="fas fa-users"></i> Total Students</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <p class="stat-value" th:text="${filteredCount}">0</p>
+                    <p class="stat-label"><i class="fas fa-filter"></i> Showing Results</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <p class="stat-value" th:text="${#lists.size(schools)}">0</p>
+                    <p class="stat-label"><i class="fas fa-school"></i> Schools</p>
+                </div>
             </div>
         </div>
     </div>
@@ -170,51 +231,153 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <h5><i class="fas fa-filter"></i> Filter Students</h5>
+        <form action="/students" method="get">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <input type="text" name="search" class="form-control filter-select" 
+                           placeholder="🔍 Search by ID, Name, Phone..." 
+                           th:value="${param.search}">
+                </div>
+                <div class="col-md-2">
+                    <select name="schoolName" class="form-select filter-select">
+                        <option value="">All Schools</option>
+                        <option th:each="school : ${schools}" 
+                                th:value="${school}" 
+                                th:text="${school}"
+                                th:selected="${param.schoolName != null && param.schoolName[0] == school}"></option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="board" class="form-select filter-select">
+                        <option value="">All Boards</option>
+                        <option th:each="b : ${boards}" 
+                                th:value="${b}" 
+                                th:text="${b}"
+                                th:selected="${param.board != null && param.board[0] == b}"></option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="academicYear" class="form-select filter-select">
+                        <option value="">All Years</option>
+                        <option th:each="year : ${academicYears}" 
+                                th:value="${year}" 
+                                th:text="${year}"
+                                th:selected="${param.academicYear != null && param.academicYear[0] == year}"></option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <select name="studentClass" class="form-select filter-select">
+                        <option value="">Class</option>
+                        <option th:each="cls : ${classes}" 
+                                th:value="${cls}" 
+                                th:text="${cls}"
+                                th:selected="${param.studentClass != null && param.studentClass[0] == cls}"></option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <select name="division" class="form-select filter-select">
+                        <option value="">Div</option>
+                        <option th:each="div : ${divisions}" 
+                                th:value="${div}" 
+                                th:text="${div}"
+                                th:selected="${param.division != null && param.division[0] == div}"></option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary btn-filter w-100">
+                        <i class="fas fa-search"></i> Filter
+                    </button>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-12 text-end">
+                    <a href="/students" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-times"></i> Clear Filters
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
     <!-- Table Container -->
     <div class="table-container">
-        <!-- Search Box -->
-        <div class="search-box">
-            <input type="text" id="searchInput" class="form-control" placeholder="🔍 Search by Student ID, Name, Class, Phone...">
-        </div>
-
         <div class="table-responsive">
             <table class="table table-hover" id="studentsTable">
                 <thead>
                     <tr>
                         <th>Student ID</th>
                         <th>Full Name</th>
-                        <th>DOB</th>
+                        <th>School</th>
+                        <th>Board</th>
+                        <th>Year</th>
+                        <th>Class</th>
+                        <th>Div</th>
+                        <th>Section</th>
                         <th>Gender</th>
-                        <th>Current Class</th>
+                        <th>DOB</th>
                         <th>Father Contact</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr th:if="${#lists.isEmpty(students)}">
-                        <td colspan="7" class="text-center text-muted py-5">
-                            <i class="fas fa-inbox fa-3x mb-3"></i>
-                            <p>No students found. Click "Add New Student" or upload Excel file.</p>
+                        <td colspan="12">
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>No students found matching your filters.</p>
+                                <a href="/students" class="btn btn-outline-primary">Clear Filters</a>
+                            </div>
                         </td>
                     </tr>
                     <tr th:each="student : ${students}">
-                        <td th:text="${student.studentId}">STU001</td>
-                        <td th:text="${student.fullName}">John Doe</td>
-                        <td th:text="${student.dateOfBirth != null ? #temporals.format(student.dateOfBirth, 'dd/MM/yyyy') : 'N/A'}">01/01/2010</td>
-                        <td th:text="${student.gender}">Male</td>
-                        <td th:text="${student.currentClass}">10-A</td>
-                        <td th:text="${student.fatherContact}">+971501234567</td>
                         <td>
+                            <strong th:text="${student.studentId}">STU001</strong>
+                        </td>
+                        <td th:text="${student.fullName}">John Doe</td>
+                        <td>
+                            <small class="text-muted" th:text="${student.schoolName != null ? student.schoolName : 'N/A'}">School Name</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-info badge-custom" th:text="${student.board != null ? student.board : 'N/A'}">CBSE</span>
+                        </td>
+                        <td>
+                            <small th:text="${student.academicYear != null ? student.academicYear : 'N/A'}">2024-25</small>
+                        </td>
+                        <td>
+                            <strong th:text="${student.studentClass != null ? student.studentClass : '-'}">10</strong>
+                        </td>
+                        <td th:text="${student.division != null ? student.division : '-'}">A</td>
+                        <td th:text="${student.subDivision != null ? student.subDivision : '-'}">Sci</td>
+                        <td>
+                            <span th:if="${student.gender == 'Male'}" class="badge bg-primary badge-custom">
+                                <i class="fas fa-mars"></i> Male
+                            </span>
+                            <span th:if="${student.gender == 'Female'}" class="badge bg-danger badge-custom">
+                                <i class="fas fa-venus"></i> Female
+                            </span>
+                            <span th:if="${student.gender != 'Male' && student.gender != 'Female'}" 
+                                  class="badge bg-secondary badge-custom" th:text="${student.gender}">Other</span>
+                        </td>
+                        <td>
+                            <small th:text="${student.dateOfBirth != null ? #temporals.format(student.dateOfBirth, 'dd/MM/yyyy') : 'N/A'}">01/01/2010</small>
+                        </td>
+                        <td>
+                            <small th:text="${student.fatherContact != null ? student.fatherContact : 'N/A'}">+971501234567</small>
+                        </td>
+                        <td class="text-nowrap">
                             <a th:href="@{/students/view/{id}(id=${student.id})}" 
-                               class="btn btn-info btn-action" title="View Details">
+                               class="btn btn-info btn-sm btn-action" title="View Details">
                                 <i class="fas fa-eye"></i>
                             </a>
                             <a th:href="@{/students/edit/{id}(id=${student.id})}" 
-                               class="btn btn-warning btn-action" title="Edit">
+                               class="btn btn-warning btn-sm btn-action" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
                             <a th:href="@{/students/delete/{id}(id=${student.id})}" 
-                               class="btn btn-danger btn-action" 
+                               class="btn btn-danger btn-sm btn-action" 
                                onclick="return confirm('Are you sure you want to delete this student?')"
                                title="Delete">
                                 <i class="fas fa-trash"></i>
@@ -228,53 +391,6 @@
 </div>
 
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
-<script>
-// Search functionality
-document.getElementById('searchInput').addEventListener('keyup', function() {
-    let searchValue = this.value.toLowerCase();
-    let table = document.getElementById('studentsTable');
-    let rows = table.getElementsByTagName('tr');
-    
-    for (let i = 1; i < rows.length; i++) {
-        let row = rows[i];
-        let text = row.textContent.toLowerCase();
-        if (text.includes(searchValue)) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    }
-});
-
-// Theme Toggle Function
-function toggleTheme() {
-    const html = document.documentElement;
-    const currentTheme = html.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    
-    const icon = document.getElementById('themeIcon');
-    if (newTheme === 'dark') {
-        icon.classList.remove('fa-moon');
-        icon.classList.add('fa-sun');
-    } else {
-        icon.classList.remove('fa-sun');
-        icon.classList.add('fa-moon');
-    }
-}
-
-// Load saved theme on page load
-(function() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    const icon = document.getElementById('themeIcon');
-    if (savedTheme === 'dark' && icon) {
-        icon.classList.remove('fa-moon');
-        icon.classList.add('fa-sun');
-    }
-})();
-</script>
 
 </body>
 </html>

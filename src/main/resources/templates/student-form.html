@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${pageTitle}">Student Form</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css" />
+    <style>
+        body { background-color: #f5f7fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .navbar-brand { font-weight: 700; color: white !important; }
+        .container { margin-top: 2rem; max-width: 900px; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .card-header { background: white; border-bottom: none; padding: 1.25rem 1.5rem; }
+        .card-title { margin: 0; font-weight: 700; color: #1e293b; }
+        .btn-primary { background: #667eea; border-color: #667eea; }
+        .btn-outline-secondary { border-radius: 8px; }
+        .form-label { font-weight: 600; color: #334155; }
+        .form-control, .form-select { border-radius: 8px; border: 2px solid #e2e8f0; }
+        .form-control:focus, .form-select:focus { border-color: #667eea; box-shadow: 0 0 0 0.2rem rgba(102,126,234,0.25); }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/dashboard"><i class="fas fa-graduation-cap"></i> GradePulse</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h4 class="card-title" th:text="${pageTitle}">Add/Edit Student</h4>
+            <a href="/students" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+        </div>
+        <div class="card-body">
+            <form th:action="@{${formAction}}" th:object="${student}" method="post">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Student ID *</label>
+                        <input type="text" class="form-control" th:field="*{studentId}" placeholder="e.g., STU001" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-control" th:field="*{fullName}" placeholder="e.g., John Doe" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control" th:field="*{dateOfBirth}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Gender</label>
+                        <select class="form-select" th:field="*{gender}">
+                            <option value="">Select</option>
+                            <option>Male</option>
+                            <option>Female</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Academic Year</label>
+                        <input type="text" class="form-control" th:field="*{academicYear}" placeholder="e.g., 2024-2025">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">School Name</label>
+                        <input type="text" class="form-control" th:field="*{schoolName}" placeholder="e.g., Cambridge High School">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Board</label>
+                        <input type="text" class="form-control" th:field="*{board}" placeholder="e.g., CBSE/ICSE/SSC">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Class</label>
+                        <input type="text" class="form-control" th:field="*{studentClass}" placeholder="e.g., 10">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Division / Stream</label>
+                        <input type="text" class="form-control" th:field="*{division}" placeholder="e.g., Science">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Section</label>
+                        <input type="text" class="form-control" th:field="*{subDivision}" placeholder="e.g., A">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Father Contact</label>
+                        <input type="text" class="form-control" th:field="*{fatherContact}" placeholder="e.g., +9198xxxxxxx">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Mother Contact</label>
+                        <input type="text" class="form-control" th:field="*{motherContact}" placeholder="e.g., +9199xxxxxxx">
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

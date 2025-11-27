@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Student Details</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css" />
+    <style>
+        body { background-color: #f5f7fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .navbar-brand { font-weight: 700; color: white !important; }
+        .container { margin-top: 2rem; max-width: 900px; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .card-header { background: white; border-bottom: none; padding: 1.25rem 1.5rem; }
+        .card-title { margin: 0; font-weight: 700; color: #1e293b; }
+        .badge { border-radius: 20px; }
+        dt { color: #475569; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/dashboard"><i class="fas fa-graduation-cap"></i> GradePulse</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h4 class="card-title"><i class="fas fa-user"></i> Student Details</h4>
+            <a href="/students" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col">
+                    <h5 th:text="${student.fullName}">John Doe</h5>
+                    <div>
+                        <span class="badge bg-info" th:text="${student.board != null ? student.board : 'N/A'}">CBSE</span>
+                        <span class="badge bg-secondary" th:text="${student.academicYear != null ? student.academicYear : 'N/A'}">2024-25</span>
+                        <span class="badge bg-primary" th:text="${student.schoolName != null ? student.schoolName : 'School'}">School</span>
+                    </div>
+                </div>
+            </div>
+
+            <dl class="row">
+                <dt class="col-sm-3">Student ID</dt>
+                <dd class="col-sm-9" th:text="${student.studentId}">STU001</dd>
+
+                <dt class="col-sm-3">Class</dt>
+                <dd class="col-sm-9" th:text="${student.studentClass}">10</dd>
+
+                <dt class="col-sm-3">Division</dt>
+                <dd class="col-sm-9" th:text="${student.division}">Science</dd>
+
+                <dt class="col-sm-3">Section</dt>
+                <dd class="col-sm-9" th:text="${student.subDivision}">A</dd>
+
+                <dt class="col-sm-3">Gender</dt>
+                <dd class="col-sm-9" th:text="${student.gender != null ? student.gender : 'N/A'}">Male</dd>
+
+                <dt class="col-sm-3">Date of Birth</dt>
+                <dd class="col-sm-9" th:text="${student.dateOfBirth != null ? #temporals.format(student.dateOfBirth, 'dd/MM/yyyy') : 'N/A'}">01/01/2010</dd>
+
+                <dt class="col-sm-3">Father Contact</dt>
+                <dd class="col-sm-9" th:text="${student.fatherContact != null ? student.fatherContact : 'N/A'}">+9198xxxxx</dd>
+
+                <dt class="col-sm-3">Mother Contact</dt>
+                <dd class="col-sm-9" th:text="${student.motherContact != null ? student.motherContact : 'N/A'}">+9199xxxxx</dd>
+            </dl>
+
+            <div class="d-flex justify-content-end">
+                <a th:href="@{/students/edit/{id}(id=${student.id})}" class="btn btn-warning me-2"><i class="fas fa-edit"></i> Edit</a>
+                <a th:href="@{/students/delete/{id}(id=${student.id})}" class="btn btn-danger" onclick="return confirm('Delete this student?')"><i class="fas fa-trash"></i> Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

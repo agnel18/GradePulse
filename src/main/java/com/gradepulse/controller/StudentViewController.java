@@ -5,6 +5,9 @@ import com.gradepulse.repository.StudentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +35,8 @@ public class StudentViewController {
             @RequestParam(required = false) String studentClass,
             @RequestParam(required = false) String division,
             @RequestParam(required = false) String gender,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "25") int size,
             Model model) {
         
         List<Student> students = studentRepository.findAll();
@@ -83,6 +88,12 @@ public class StudentViewController {
                 .toList();
         }
         
+        // Apply pagination to filtered list
+        int start = Math.min(page * size, students.size());
+        int end = Math.min(start + size, students.size());
+        List<Student> paginatedStudents = students.subList(start, end);
+        int totalPages = (int) Math.ceil((double) students.size() / size);
+        
         // Get unique values for filter dropdowns
         List<Student> allStudents = studentRepository.findAll();
         model.addAttribute("schools", allStudents.stream().map(Student::getSchoolName).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
@@ -91,10 +102,13 @@ public class StudentViewController {
         model.addAttribute("classes", allStudents.stream().map(Student::getStudentClass).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
         model.addAttribute("divisions", allStudents.stream().map(Student::getDivision).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
         
-        model.addAttribute("students", students);
+        model.addAttribute("students", paginatedStudents);
         model.addAttribute("totalStudents", allStudents.size());
         model.addAttribute("filteredCount", students.size());
-        log.info("Listing {} students (filtered from {})", students.size(), allStudents.size());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("pageSize", size);
+        log.info("Listing {} students on page {} of {} (filtered from {})", paginatedStudents.size(), page + 1, totalPages, allStudents.size());
         return "students-list";
     }
 

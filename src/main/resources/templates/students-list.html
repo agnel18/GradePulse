@@ -387,6 +387,32 @@
                 </tbody>
             </table>
         </div>
+        
+        <!-- Pagination Controls -->
+        <div class="d-flex justify-content-between align-items-center mt-3" th:if="${totalPages > 1}">
+            <div>
+                <p class="text-muted mb-0">
+                    Showing <strong th:text="${currentPage * pageSize + 1}">1</strong> 
+                    to <strong th:text="${currentPage * pageSize + #lists.size(students)}">25</strong> 
+                    of <strong th:text="${filteredCount}">100</strong> results
+                </p>
+            </div>
+            <nav>
+                <ul class="pagination mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 0}? 'disabled'">
+                        <a class="page-link" th:href="@{/students(page=${currentPage - 1}, size=${pageSize}, search=${param.search}, schoolName=${param.schoolName}, board=${param.board}, academicYear=${param.academicYear}, studentClass=${param.studentClass}, division=${param.division}, gender=${param.gender})}">Previous</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+                        th:classappend="${i == currentPage}? 'active'"
+                        th:if="${i >= currentPage - 2 && i <= currentPage + 2}">
+                        <a class="page-link" th:href="@{/students(page=${i}, size=${pageSize}, search=${param.search}, schoolName=${param.schoolName}, board=${param.board}, academicYear=${param.academicYear}, studentClass=${param.studentClass}, division=${param.division}, gender=${param.gender})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage >= totalPages - 1}? 'disabled'">
+                        <a class="page-link" th:href="@{/students(page=${currentPage + 1}, size=${pageSize}, search=${param.search}, schoolName=${param.schoolName}, board=${param.board}, academicYear=${param.academicYear}, studentClass=${param.studentClass}, division=${param.division}, gender=${param.gender})}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
     </div>
 </div>
 

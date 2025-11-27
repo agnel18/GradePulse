@@ -721,25 +721,74 @@ public class UploadController {
         // Handle string date cells
         String str = getString(row, col);
         if (str == null || str.trim().isEmpty()) return null;
+        str = str.trim();
         
-        // Try multiple date formats (DD/MM/YYYY preferred for Indian context)
+        // Try multiple date formats - comprehensive list covering all common cases
+        // Priority: DD/MM/YYYY variants first (Indian standard), then others
         String[] patterns = {
-            "dd/MM/yyyy",   // 15/01/2015 (Indian format - try first)
-            "dd-MM-yyyy",   // 15-01-2015
-            "dd-MMM-yyyy",  // 15-Jan-2015
-            "yyyy-MM-dd",   // 2015-01-15
-            "MM/dd/yyyy"    // 01/15/2015 (US format - try last)
+            // With 4-digit year, 2-digit day/month
+            "dd/MM/yyyy",   // 01/04/2024, 15/01/2015
+            "dd-MM-yyyy",   // 01-04-2024, 15-01-2015
+            "dd.MM.yyyy",   // 01.04.2024, 15.01.2015
+            "dd MM yyyy",   // 01 04 2024, 15 01 2015
+            
+            // With 4-digit year, 1-2 digit day/month (flexible)
+            "d/M/yyyy",     // 1/4/2024, 15/1/2015
+            "d-M-yyyy",     // 1-4-2024, 15-1-2015
+            "d.M.yyyy",     // 1.4.2024, 15.1.2015
+            "d M yyyy",     // 1 4 2024, 15 1 2015
+            
+            // Month name formats
+            "dd-MMM-yyyy",  // 15-Jan-2015, 01-Apr-2024
+            "dd MMM yyyy",  // 15 Jan 2015, 01 Apr 2024
+            "d-MMM-yyyy",   // 1-Jan-2015, 15-Apr-2024
+            "d MMM yyyy",   // 1 Jan 2015, 15 Apr 2024
+            "dd-MMMM-yyyy", // 15-January-2015
+            "d-MMMM-yyyy",  // 1-January-2015
+            
+            // ISO format (international standard)
+            "yyyy-MM-dd",   // 2015-01-15, 2024-04-01
+            "yyyy/MM/dd",   // 2015/01/15, 2024/04/01
+            "yyyy-M-d",     // 2015-1-15, 2024-4-1
+            "yyyy/M/d",     // 2015/1/15, 2024/4/1
+            
+            // US format (MM/DD/YYYY) - try last to avoid ambiguity
+            "MM/dd/yyyy",   // 04/01/2024 (could be April 1 or Jan 4)
+            "MM-dd-yyyy",   // 04-01-2024
+            "MM.dd.yyyy",   // 04.01.2024
+            "M/d/yyyy",     // 4/1/2024, 12/31/2024
+            "M-d-yyyy",     // 4-1-2024, 12-31-2024
+            
+            // With 2-digit year (less common but possible)
+            "dd/MM/yy",     // 01/04/24, 15/01/15
+            "dd-MM-yy",     // 01-04-24, 15-01-15
+            "d/M/yy",       // 1/4/24, 15/1/15
+            "d-M-yy",       // 1-4-24, 15-1-15
+            "MM/dd/yy",     // 04/01/24
+            "M/d/yy",       // 4/1/24
+            "yy-MM-dd",     // 24-04-01
+            "yy/MM/dd"      // 24/04/01
         };
         
         for (String pattern : patterns) {
             try {
-                return LocalDate.parse(str, DateTimeFormatter.ofPattern(pattern));
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+                LocalDate date = LocalDate.parse(str, formatter);
+                
+                // Sanity check: reject dates that are clearly wrong (future dates > 50 years or past > 150 years)
+                int currentYear = java.time.Year.now().getValue();
+                if (date.getYear() > currentYear + 50 || date.getYear() < currentYear - 150) {
+                    continue; // Skip this interpretation
+                }
+                
+                log.debug("Successfully parsed date '{}' using pattern '{}'", str, pattern);
+                return date;
             } catch (Exception ignored) {
                 // Try next pattern
             }
         }
         
-        log.warn("Could not parse date: {}", str);
+        log.warn("Could not parse date: '{}' - tried {} patterns", str, patterns.length);
         return null;
     }
 

@@ -74,7 +74,10 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Board</label>
-                        <input type="text" class="form-control" th:field="*{board}" placeholder="e.g., CBSE/ICSE/SSC">
+                        <select class="form-select" th:field="*{board}">
+                            <option value="">Select</option>
+                            <option th:each="b : ${boards}" th:value="${b}" th:text="${b}"></option>
+                        </select>
                     </div>
 
                     <div class="col-md-4">
@@ -90,19 +93,28 @@
                         <input type="text" class="form-control" th:field="*{subDivision}" placeholder="e.g., A">
                     </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label">Father Contact</label>
-                        <input type="text" class="form-control" th:field="*{fatherContact}" placeholder="e.g., +9198xxxxxxx">
+                    <div class="col-md-4">
+                        <label class="form-label">Academic Year</label>
+                        <select class="form-select" th:field="*{academicYear}">
+                            <option value="">Select</option>
+                            <option th:each="y : ${academicYears}" th:value="${y}" th:text="${y}"></option>
+                        </select>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Mother Contact</label>
-                        <input type="text" class="form-control" th:field="*{motherContact}" placeholder="e.g., +9199xxxxxxx">
+                    <div class="col-md-4">
+                        <label class="form-label">Class</label>
+                        <select class="form-select" th:field="*{studentClass}">
+                            <option value="">Select</option>
+                            <option th:each="c : ${classes}" th:value="${c}" th:text="${c}"></option>
+                        </select>
                     </div>
                     
                     <!-- Additional Active Fields -->
-                    <div class="col-md-6">
-                        <label class="form-label">Aadhaar Number</label>
-                        <input type="text" class="form-control" th:field="*{aadhaarNumber}" placeholder="12-digit Aadhaar">
+                    <div class="col-md-4">
+                        <label class="form-label">Division / Stream</label>
+                        <select class="form-select" th:field="*{division}">
+                            <option value="">Select</option>
+                            <option th:each="d : ${divisions}" th:value="${d}" th:text="${d}"></option>
+                        </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">APAAR ID</label>

@@ -103,6 +103,12 @@ public class StudentViewController {
         model.addAttribute("student", new Student());
         model.addAttribute("pageTitle", "Add New Student");
         model.addAttribute("formAction", "/students/save");
+        // Dropdown options from existing data
+        List<Student> allStudents = studentRepository.findAll();
+        model.addAttribute("boards", allStudents.stream().map(Student::getBoard).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
+        model.addAttribute("academicYears", allStudents.stream().map(Student::getAcademicYear).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
+        model.addAttribute("classes", allStudents.stream().map(Student::getStudentClass).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
+        model.addAttribute("divisions", allStudents.stream().map(Student::getDivision).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
         return "student-form";
     }
 
@@ -116,6 +122,12 @@ public class StudentViewController {
         model.addAttribute("student", student);
         model.addAttribute("pageTitle", "Edit Student: " + student.getFullName());
         model.addAttribute("formAction", "/students/update/" + id);
+        // Dropdown options from existing data
+        List<Student> allStudents = studentRepository.findAll();
+        model.addAttribute("boards", allStudents.stream().map(Student::getBoard).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
+        model.addAttribute("academicYears", allStudents.stream().map(Student::getAcademicYear).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
+        model.addAttribute("classes", allStudents.stream().map(Student::getStudentClass).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
+        model.addAttribute("divisions", allStudents.stream().map(Student::getDivision).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
         return "student-form";
     }
 

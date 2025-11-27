@@ -34,15 +34,20 @@
             <a href="/students" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> Back</a>
         </div>
         <div class="card-body">
+            <div th:if="${#fields.hasAnyErrors()}" class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i> Please fix the errors below.
+            </div>
             <form th:action="@{${formAction}}" th:object="${student}" method="post">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Student ID *</label>
-                        <input type="text" class="form-control" th:field="*{studentId}" placeholder="e.g., STU001" required>
+                        <input type="text" class="form-control" th:classappend="${#fields.hasErrors('studentId')}? ' is-invalid'" th:field="*{studentId}" placeholder="e.g., STU001" required>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('studentId')}" th:errors="*{studentId}">Invalid</div>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Full Name *</label>
-                        <input type="text" class="form-control" th:field="*{fullName}" placeholder="e.g., John Doe" required>
+                        <input type="text" class="form-control" th:classappend="${#fields.hasErrors('fullName')}? ' is-invalid'" th:field="*{fullName}" placeholder="e.g., John Doe" required>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}">Invalid</div>
                     </div>
 
                     <div class="col-md-4">

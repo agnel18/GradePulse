@@ -9,6 +9,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
 
 import java.util.List;
 
@@ -118,7 +120,15 @@ public class StudentViewController {
     }
 
     @PostMapping("/save")
-    public String saveStudent(@ModelAttribute("student") Student student, RedirectAttributes redirectAttributes) {
+    public String saveStudent(@Valid @ModelAttribute("student") Student student,
+                              BindingResult result,
+                              Model model,
+                              RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            model.addAttribute("pageTitle", "Add New Student");
+            model.addAttribute("formAction", "/students/save");
+            return "student-form";
+        }
         try {
             studentRepository.save(student);
             redirectAttributes.addFlashAttribute("success", "Student added successfully: " + student.getFullName());
@@ -131,13 +141,22 @@ public class StudentViewController {
     }
 
     @PostMapping("/update/{id}")
-    public String updateStudent(@PathVariable("id") Long id, @ModelAttribute("student") Student student, RedirectAttributes redirectAttributes) {
+    public String updateStudent(@PathVariable("id") Long id,
+                                @Valid @ModelAttribute("student") Student student,
+                                BindingResult result,
+                                Model model,
+                                RedirectAttributes redirectAttributes) {
+        Student existing = studentRepository.findById(id).orElse(null);
+        if (existing == null) {
+            redirectAttributes.addFlashAttribute("error", "Student not found");
+            return "redirect:/students";
+        }
+        if (result.hasErrors()) {
+            model.addAttribute("pageTitle", "Edit Student: " + (student.getFullName() != null ? student.getFullName() : ""));
+            model.addAttribute("formAction", "/students/update/" + id);
+            return "student-form";
+        }
         try {
-            Student existing = studentRepository.findById(id).orElse(null);
-            if (existing == null) {
-                redirectAttributes.addFlashAttribute("error", "Student not found");
-                return "redirect:/students";
-            }
             student.setId(id);
             studentRepository.save(student);
             redirectAttributes.addFlashAttribute("success", "Student updated successfully: " + student.getFullName());

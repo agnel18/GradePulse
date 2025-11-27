@@ -1,6 +1,8 @@
 package com.gradepulse.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -13,9 +15,13 @@ public class Student {
     private Long id;
 
     @Column(name = "student_id", nullable = false, unique = true)
+    @NotBlank(message = "Student ID is required")
+    @Size(max = 255, message = "Student ID must be at most 255 characters")
     private String studentId;
 
     @Column(name = "full_name", nullable = false)
+    @NotBlank(message = "Full name is required")
+    @Size(max = 255, message = "Full name must be at most 255 characters")
     private String fullName;
 
     @Column(name = "date_of_birth")

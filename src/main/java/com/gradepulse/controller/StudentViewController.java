@@ -40,20 +40,20 @@ public class StudentViewController {
             @RequestParam(defaultValue = "25") int size,
             Model model) {
         
-        // Normalize empty strings to null
-        search = (search != null && search.trim().isEmpty()) ? null : search;
-        schoolName = (schoolName != null && schoolName.trim().isEmpty()) ? null : schoolName;
-        board = (board != null && board.trim().isEmpty()) ? null : board;
-        academicYear = (academicYear != null && academicYear.trim().isEmpty()) ? null : academicYear;
-        studentClass = (studentClass != null && studentClass.trim().isEmpty()) ? null : studentClass;
-        division = (division != null && division.trim().isEmpty()) ? null : division;
-        gender = (gender != null && gender.trim().isEmpty()) ? null : gender;
+        // Normalize empty strings to null (create new final variables for lambda use)
+        final String finalSearch = (search != null && search.trim().isEmpty()) ? null : search;
+        final String finalSchoolName = (schoolName != null && schoolName.trim().isEmpty()) ? null : schoolName;
+        final String finalBoard = (board != null && board.trim().isEmpty()) ? null : board;
+        final String finalAcademicYear = (academicYear != null && academicYear.trim().isEmpty()) ? null : academicYear;
+        final String finalStudentClass = (studentClass != null && studentClass.trim().isEmpty()) ? null : studentClass;
+        final String finalDivision = (division != null && division.trim().isEmpty()) ? null : division;
+        final String finalGender = (gender != null && gender.trim().isEmpty()) ? null : gender;
         
         List<Student> students = studentRepository.findAll();
         
         // Apply filters
-        if (search != null && !search.trim().isEmpty()) {
-            String s = search.toLowerCase();
+        if (finalSearch != null && !finalSearch.trim().isEmpty()) {
+            String s = finalSearch.toLowerCase();
             students = students.stream()
                 .filter(st -> (st.getStudentId() != null && st.getStudentId().toLowerCase().contains(s)) ||
                              (st.getFullName() != null && st.getFullName().toLowerCase().contains(s)) ||
@@ -62,39 +62,39 @@ public class StudentViewController {
                 .toList();
         }
         
-        if (schoolName != null && !schoolName.trim().isEmpty()) {
+        if (finalSchoolName != null && !finalSchoolName.trim().isEmpty()) {
             students = students.stream()
-                .filter(st -> st.getSchoolName() != null && st.getSchoolName().equals(schoolName))
+                .filter(st -> st.getSchoolName() != null && st.getSchoolName().equals(finalSchoolName))
                 .toList();
         }
         
-        if (board != null && !board.trim().isEmpty()) {
+        if (finalBoard != null && !finalBoard.trim().isEmpty()) {
             students = students.stream()
-                .filter(st -> st.getBoard() != null && st.getBoard().equals(board))
+                .filter(st -> st.getBoard() != null && st.getBoard().equals(finalBoard))
                 .toList();
         }
         
-        if (academicYear != null && !academicYear.trim().isEmpty()) {
+        if (finalAcademicYear != null && !finalAcademicYear.trim().isEmpty()) {
             students = students.stream()
-                .filter(st -> st.getAcademicYear() != null && st.getAcademicYear().equals(academicYear))
+                .filter(st -> st.getAcademicYear() != null && st.getAcademicYear().equals(finalAcademicYear))
                 .toList();
         }
         
-        if (studentClass != null && !studentClass.trim().isEmpty()) {
+        if (finalStudentClass != null && !finalStudentClass.trim().isEmpty()) {
             students = students.stream()
-                .filter(st -> st.getStudentClass() != null && st.getStudentClass().equals(studentClass))
+                .filter(st -> st.getStudentClass() != null && st.getStudentClass().equals(finalStudentClass))
                 .toList();
         }
         
-        if (division != null && !division.trim().isEmpty()) {
+        if (finalDivision != null && !finalDivision.trim().isEmpty()) {
             students = students.stream()
-                .filter(st -> st.getDivision() != null && st.getDivision().equals(division))
+                .filter(st -> st.getDivision() != null && st.getDivision().equals(finalDivision))
                 .toList();
         }
         
-        if (gender != null && !gender.trim().isEmpty()) {
+        if (finalGender != null && !finalGender.trim().isEmpty()) {
             students = students.stream()
-                .filter(st -> st.getGender() != null && st.getGender().equalsIgnoreCase(gender))
+                .filter(st -> st.getGender() != null && st.getGender().equalsIgnoreCase(finalGender))
                 .toList();
         }
         

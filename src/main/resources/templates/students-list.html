@@ -214,7 +214,7 @@
             </div>
             <div class="col-md-4">
                 <div class="stat-card">
-                    <p class="stat-value" th:text="${#lists.size(schools)}">0</p>
+                    <p class="stat-value" th:text="${schools != null ? #lists.size(schools) : 0}">0</p>
                     <p class="stat-label"><i class="fas fa-school"></i> Schools</p>
                 </div>
             </div>
@@ -244,7 +244,7 @@
                 <div class="col-md-2">
                     <select name="schoolName" class="form-select filter-select">
                         <option value="">All Schools</option>
-                        <option th:each="school : ${schools}" 
+                        <option th:if="${schools != null}" th:each="school : ${schools}" 
                                 th:value="${school}" 
                                 th:text="${school}"
                                 th:selected="${param.schoolName != null && param.schoolName[0] == school}"></option>
@@ -253,7 +253,7 @@
                 <div class="col-md-2">
                     <select name="board" class="form-select filter-select">
                         <option value="">All Boards</option>
-                        <option th:each="b : ${boards}" 
+                        <option th:if="${boards != null}" th:each="b : ${boards}" 
                                 th:value="${b}" 
                                 th:text="${b}"
                                 th:selected="${param.board != null && param.board[0] == b}"></option>
@@ -262,7 +262,7 @@
                 <div class="col-md-2">
                     <select name="academicYear" class="form-select filter-select">
                         <option value="">All Years</option>
-                        <option th:each="year : ${academicYears}" 
+                        <option th:if="${academicYears != null}" th:each="year : ${academicYears}" 
                                 th:value="${year}" 
                                 th:text="${year}"
                                 th:selected="${param.academicYear != null && param.academicYear[0] == year}"></option>
@@ -271,7 +271,7 @@
                 <div class="col-md-1">
                     <select name="studentClass" class="form-select filter-select">
                         <option value="">Class</option>
-                        <option th:each="cls : ${classes}" 
+                        <option th:if="${classes != null}" th:each="cls : ${classes}" 
                                 th:value="${cls}" 
                                 th:text="${cls}"
                                 th:selected="${param.studentClass != null && param.studentClass[0] == cls}"></option>
@@ -280,7 +280,7 @@
                 <div class="col-md-1">
                     <select name="division" class="form-select filter-select">
                         <option value="">Div</option>
-                        <option th:each="div : ${divisions}" 
+                        <option th:if="${divisions != null}" th:each="div : ${divisions}" 
                                 th:value="${div}" 
                                 th:text="${div}"
                                 th:selected="${param.division != null && param.division[0] == div}"></option>
@@ -389,7 +389,7 @@
         </div>
         
         <!-- Pagination Controls -->
-        <div class="d-flex justify-content-between align-items-center mt-3" th:if="${totalPages > 1}">
+        <div class="d-flex justify-content-between align-items-center mt-3" th:if="${totalPages != null && totalPages > 1}">
             <div>
                 <p class="text-muted mb-0">
                     Showing <strong th:text="${currentPage * pageSize + 1}">1</strong> 

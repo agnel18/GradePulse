@@ -157,8 +157,8 @@ public class StudentViewController {
             model.addAttribute("pageSize", size);
             
             log.info("Listing {} students on page {} of {} (filtered from {} total)", paginatedStudents.size(), page + 1, Math.max(totalPages, 1), allStudents.size());
-            log.info("=== CONTROLLER RETURNING students-list TEMPLATE ===");
-            return "students-list";
+            log.info("=== CONTROLLER RETURNING students-list-simple TEMPLATE ===");
+            return "students-list-simple";
         } catch (Exception e) {
             log.error("FATAL ERROR in controller", e);
             e.printStackTrace();

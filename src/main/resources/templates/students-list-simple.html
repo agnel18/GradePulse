@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Students</title>
+</head>
+<body>
+    <h1>Students List</h1>
+    
+    <p>Total: <span th:text="${totalStudents}">0</span></p>
+    <p>Filtered: <span th:text="${filteredCount}">0</span></p>
+    
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Class</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:if="${#lists.isEmpty(students)}">
+                <td colspan="3">No students found</td>
+            </tr>
+            <tr th:each="student : ${students}">
+                <td th:text="${student.studentId}">ID</td>
+                <td th:text="${student.fullName}">Name</td>
+                <td th:text="${student.studentClass}">Class</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

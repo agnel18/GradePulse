@@ -34,8 +34,12 @@ public class StudentViewController {
             @RequestParam(required = false) String division,
             @RequestParam(required = false) String gender,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "25") int size,
+            @RequestParam(defaultValue = "5") int size,
             Model model) {
+        
+        log.info("=== LISTSTU DENTS REQUEST STARTED ===");
+        log.info("Params: search={}, school={}, board={}, year={}, class={}, div={}, gender={}, page={}, size={}", 
+            search, schoolName, board, academicYear, studentClass, division, gender, page, size);
         
         // Normalize empty strings to null (create new final variables for lambda use)
         final String finalSearch = (search != null && search.trim().isEmpty()) ? null : search;
@@ -46,7 +50,21 @@ public class StudentViewController {
         final String finalDivision = (division != null && division.trim().isEmpty()) ? null : division;
         final String finalGender = (gender != null && gender.trim().isEmpty()) ? null : gender;
         
-        List<Student> students = studentRepository.findAll();
+        List<Student> students;
+        try {
+            students = studentRepository.findAll();
+            log.info("Loaded {} students from database", students.size());
+        } catch (Exception e) {
+            log.error("FATAL: Failed to load students from database", e);
+            model.addAttribute("error", "Database error: " + e.getMessage());
+            model.addAttribute("students", new ArrayList<>());
+            model.addAttribute("totalStudents", 0);
+            model.addAttribute("filteredCount", 0);
+            model.addAttribute("currentPage", 0);
+            model.addAttribute("totalPages", 0);
+            model.addAttribute("pageSize", size);
+            return "students-list";
+        }
         
         // Apply filters
         if (finalSearch != null && !finalSearch.trim().isEmpty()) {
@@ -99,30 +117,61 @@ public class StudentViewController {
         int filteredSize = students != null ? students.size() : 0;
         int totalPages = filteredSize > 0 ? (int) Math.ceil((double) filteredSize / size) : 0;
         
+        log.info("DEBUG - Before pagination: filteredSize={}, totalPages={}, page={}, size={}", filteredSize, totalPages, page, size);
+        
         // Ensure page is within bounds
         if (page < 0) page = 0;
         if (page >= totalPages && totalPages > 0) page = totalPages - 1;
         
         int start = Math.min(page * size, filteredSize);
         int end = Math.min(start + size, filteredSize);
+        
+        log.info("DEBUG - Pagination bounds: start={}, end={}, will slice students list", start, end);
+        
         List<Student> paginatedStudents = filteredSize > 0 ? students.subList(start, end) : new ArrayList<>();
+        
+        log.info("DEBUG - After pagination: paginatedStudents.size={}", paginatedStudents.size());
+        
+        // Log each student to identify problematic data
+        for (int i = 0; i < paginatedStudents.size(); i++) {
+            Student s = paginatedStudents.get(i);
+            log.info("Student[{}]: id={}, studentId={}, name={}, dob={}", 
+                i, s.getId(), s.getStudentId(), s.getFullName(), s.getDateOfBirth());
+        }
         
         // Get unique values for filter dropdowns
         List<Student> allStudents = studentRepository.findAll();
-        model.addAttribute("schools", allStudents.stream().map(Student::getSchoolName).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
-        model.addAttribute("boards", allStudents.stream().map(Student::getBoard).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
-        model.addAttribute("academicYears", allStudents.stream().map(Student::getAcademicYear).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
-        model.addAttribute("classes", allStudents.stream().map(Student::getStudentClass).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
-        model.addAttribute("divisions", allStudents.stream().map(Student::getDivision).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
         
-        model.addAttribute("students", paginatedStudents);
-        model.addAttribute("totalStudents", allStudents.size());
-        model.addAttribute("filteredCount", filteredSize);
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", totalPages);
-        model.addAttribute("pageSize", size);
-        log.info("Listing {} students on page {} of {} (filtered from {} total)", paginatedStudents.size(), page + 1, Math.max(totalPages, 1), allStudents.size());
-        return "students-list";
+        try {
+            model.addAttribute("schools", allStudents.stream().map(Student::getSchoolName).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
+            model.addAttribute("boards", allStudents.stream().map(Student::getBoard).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
+            model.addAttribute("academicYears", allStudents.stream().map(Student::getAcademicYear).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
+            model.addAttribute("classes", allStudents.stream().map(Student::getStudentClass).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
+            model.addAttribute("divisions", allStudents.stream().map(Student::getDivision).filter(s -> s != null && !s.isEmpty()).distinct().sorted().toList());
+            
+            model.addAttribute("students", paginatedStudents);
+            model.addAttribute("totalStudents", allStudents.size());
+            model.addAttribute("filteredCount", filteredSize);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", totalPages);
+            model.addAttribute("pageSize", size);
+            
+            log.info("Listing {} students on page {} of {} (filtered from {} total)", paginatedStudents.size(), page + 1, Math.max(totalPages, 1), allStudents.size());
+            log.info("=== CONTROLLER RETURNING students-list TEMPLATE ===");
+            return "students-list";
+        } catch (Exception e) {
+            log.error("FATAL ERROR in controller", e);
+            e.printStackTrace();
+            model.addAttribute("error", "Failed to load students: " + e.getMessage());
+            model.addAttribute("students", new ArrayList<>());
+            model.addAttribute("totalStudents", 0);
+            model.addAttribute("filteredCount", 0);
+            model.addAttribute("currentPage", 0);
+            model.addAttribute("totalPages", 0);
+            model.addAttribute("pageSize", size);
+            log.info("=== CONTROLLER RETURNING students-list WITH ERROR ===");
+            return "students-list";
+        }
     }
 
     @GetMapping("/add")
